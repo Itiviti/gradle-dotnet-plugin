@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Company>my company</Company>
+    <Product>my product</Product>
+    <Description>my description</Description>
+    <Copyright>my copyright</Copyright>
+    <Title>my title</Title>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="App.cs" />
+    <Compile Remove="Page.cs" />
+    <None Remove="Content.txt" />
+    <None Remove="EmbeddedResource.png" />
+    <None Remove="Resource.png" />
+    <None Remove="Page.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Content.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResource.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resource.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="None.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Page.cs" />
+  </ItemGroup>
+</Project>
