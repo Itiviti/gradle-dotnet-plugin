@@ -5,6 +5,7 @@ import kotlinx.coroutines.*
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.ExtensionAware
 import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
@@ -16,7 +17,13 @@ import java.nio.file.StandardCopyOption
 import java.util.regex.Pattern
 
 class DotnetPlugin: Plugin<Project> {
+    companion object {
+        const val TASK_GROUP = "dotnet"
+    }
+
     override fun apply(project: Project) {
+        project.plugins.apply(BasePlugin::class.java)
+
         val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name)
         val extensionAware = extension as ExtensionAware
         val restoreExtension = extensionAware.extensions.create("restore", DotnetRestoreExtension::class.java)
@@ -41,25 +48,28 @@ class DotnetPlugin: Plugin<Project> {
         }
 
         // Register a task
-        val dotnetClean = project.tasks.register("dotnetClean", DotnetCleanTask::class.java) { task ->
-            task.group = "dotnet"
-            task.description = "Cleans the output of a project."
+        project.tasks.register("dotnetClean", DotnetCleanTask::class.java) { task ->
+            with(task) {
+                group = TASK_GROUP
+                description = "Cleans the output of a project."
+                dependsOn("clean")
+            }
         }
 
-        val dotnetBuild = project.tasks.register("dotnetBuild", DotnetBuildTask::class.java) { task ->
-            task.group = "dotnet"
-            task.description = "Builds a project and all of its dependencies."
+        project.tasks.register("dotnetBuild", DotnetBuildTask::class.java) { task ->
+            with(task) {
+                group = TASK_GROUP
+                description = "Builds a project and all of its dependencies."
+                dependsOn("assemble")
+            }
         }
 
-        val dotnetTest = project.tasks.register("dotnetTest", DotnetTestTask::class.java) { task ->
-            task.group = "dotnet"
-            task.description = ".NET test driver used to execute unit tests."
-        }
-
-        project.plugins.withId("base") {
-            dotnetClean.configure { it.dependsOn("clean") }
-            dotnetBuild.configure { it.dependsOn("build") }
-            dotnetTest.configure { it.dependsOn("test") }
+        project.tasks.register("dotnetTest", DotnetTestTask::class.java) { task ->
+            with(task) {
+                group = TASK_GROUP
+                description = ".NET test driver used to execute unit tests."
+                dependsOn("test")
+            }
         }
     }
 
