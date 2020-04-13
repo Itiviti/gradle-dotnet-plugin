@@ -39,7 +39,7 @@ gradlePlugin {
 pluginBundle {
     website = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
     vcsUrl = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
-    description = 'radle-dotnet-plugin is a Gradle plugin for sdk project build'
+    description = 'gradle-dotnet-plugin is a Gradle plugin for sdk project build'
     tags = ['dotnet', 'dotnet-core', 'msbuild', 'sonarqube', 'nunit3', 'nuget', 'gradle', 'gradle-plugin']
 
     plugins {
