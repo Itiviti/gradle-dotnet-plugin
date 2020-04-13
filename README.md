@@ -143,7 +143,7 @@ Note:
 #### dotnet pack
 It is not supported, recommended adding `<GeneratePackageOnBuild>true</GeneratePackageOnBuild>` to your csproj  
 
-####dotnet test
+#### dotnet test
 To run testing successfully, make sure you have the following packages referenced
 * Microsoft.NET.Test.Sdk
 * NUnit3TestAdapter (or other relevant adapter)
