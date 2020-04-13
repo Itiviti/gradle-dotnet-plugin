@@ -28,5 +28,6 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
-    codeCoverageToolOption: JaCoCo
+    # https://github.com/microsoft/azure-pipelines-tasks/issues/12593
+    # codeCoverageToolOption: JaCoCo
     tasks: 'build'
