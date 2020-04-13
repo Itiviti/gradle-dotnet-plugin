@@ -1,9 +1,10 @@
-package com.itiviti
+package com.itiviti.tasks
 
+import com.itiviti.extensions.DotnetNUnitExtension
+import com.itiviti.extensions.DotnetTestExtension
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
-import org.gradle.internal.os.OperatingSystem
 
 open class DotnetTestTask: DotnetBaseTask("test") {
     private var filter: String? = null
@@ -23,7 +24,7 @@ open class DotnetTestTask: DotnetBaseTask("test") {
 
         val escapeQuote = "\\\""
 
-        val testExtension = (getPluginExtension() as ExtensionAware).extensions.getByType(DotnetTestExtension::class.java)
+        val testExtension = getNestedExtension(DotnetTestExtension::class.java)
         if (testExtension.settings?.exists() == true) {
             args("--settings", testExtension.settings!!.absolutePath)
         }

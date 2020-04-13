@@ -1,5 +1,10 @@
 package com.itiviti
 
+import com.itiviti.extensions.*
+import com.itiviti.tasks.DotnetBuildTask
+import com.itiviti.tasks.DotnetCleanTask
+import com.itiviti.tasks.DotnetNugetPushTask
+import com.itiviti.tasks.DotnetTestTask
 import groovy.json.JsonSlurper
 import kotlinx.coroutines.*
 import org.gradle.api.GradleException
@@ -7,6 +12,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.publish.plugins.PublishingPlugin
 import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
 import org.reflections.util.ClasspathHelper
@@ -27,9 +33,10 @@ class DotnetPlugin: Plugin<Project> {
         val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name)
         val extensionAware = extension as ExtensionAware
         val restoreExtension = extensionAware.extensions.create("restore", DotnetRestoreExtension::class.java)
-        extensionAware.extensions.create("build", DotnetBuildExtension::class.java)
+        extensionAware.extensions.create("build", DotnetBuildExtension::class.java, project.version)
         val testExtension = extensionAware.extensions.create("test", DotnetTestExtension::class.java, project.buildDir)
         (testExtension as ExtensionAware).extensions.create("nunit", DotnetNUnitExtension::class.java, project.buildDir)
+        extensionAware.extensions.create("nugetPush", DotnetNugetPushExtension::class.java)
 
         project.afterEvaluate {
             it.logger.lifecycle("Start restoring packages")
@@ -48,27 +55,41 @@ class DotnetPlugin: Plugin<Project> {
         }
 
         // Register a task
-        project.tasks.register("dotnetClean", DotnetCleanTask::class.java) { task ->
-            with(task) {
+        project.tasks.register("dotnetClean", DotnetCleanTask::class.java) {
+            with(it) {
                 group = TASK_GROUP
                 description = "Cleans the output of a project."
                 dependsOn("clean")
             }
         }
 
-        project.tasks.register("dotnetBuild", DotnetBuildTask::class.java) { task ->
-            with(task) {
+        val dotnetBuild = project.tasks.register("dotnetBuild", DotnetBuildTask::class.java) {
+            with(it) {
                 group = TASK_GROUP
                 description = "Builds a project and all of its dependencies."
                 dependsOn("assemble")
             }
         }
 
-        project.tasks.register("dotnetTest", DotnetTestTask::class.java) { task ->
-            with(task) {
+        project.tasks.register("dotnetTest", DotnetTestTask::class.java) {
+            with(it) {
                 group = TASK_GROUP
                 description = ".NET test driver used to execute unit tests."
                 dependsOn("test")
+            }
+        }
+
+        val dotnetNugetPush = project.tasks.register("dotnetNugetPush", DotnetNugetPushTask::class.java) {
+            with(it) {
+                group = TASK_GROUP
+                description = "Push to nuget registry"
+                dependsOn(dotnetBuild)
+            }
+        }
+
+        project.plugins.withType(PublishingPlugin::class.java) {
+            dotnetNugetPush.configure {
+                it.dependsOn(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)
             }
         }
     }
@@ -86,6 +107,10 @@ class DotnetPlugin: Plugin<Project> {
         }
         if (restoreExtension.noCache) {
             command.add("--no-cache")
+        }
+        restoreExtension.source.forEach {
+            command.add("--source")
+            command.add(it)
         }
 
         project.logger.info("  Start executing command: {} in {}", command.joinToString(" "), extension.workingDir)

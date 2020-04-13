@@ -1,5 +1,6 @@
-package com.itiviti
+package com.itiviti.extensions
 
+import com.itiviti.DotnetProject
 import org.gradle.api.GradleException
 import java.io.File
 
@@ -39,6 +40,11 @@ open class DotnetPluginExtension(var projectName: String) {
      * target framework, the framework must be defined in the project file, default defined as in solution
      */
     var framework: String? = null
+
+    /**
+     * target runtimes
+     */
+    var runtime: String? = null
 
     lateinit var allProjects: Map<String, DotnetProject>
 

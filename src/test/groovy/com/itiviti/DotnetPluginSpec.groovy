@@ -11,6 +11,7 @@
  ************************************************************************/
 package com.itiviti
 
+import com.itiviti.extensions.DotnetPluginExtension
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 

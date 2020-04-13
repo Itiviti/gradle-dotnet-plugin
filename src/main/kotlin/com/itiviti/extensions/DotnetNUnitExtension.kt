@@ -1,4 +1,4 @@
-package com.itiviti
+package com.itiviti.extensions
 
 import java.io.File
 

@@ -15,7 +15,7 @@ Plugin applies the base plugin automatically, and hooks tasks to standard build 
 
 ## Prerequisites
 * .Net Core SDK 3.0
-* Gradle 5
+* Gradle 6.1
 
 ## Configuration
 ```groovy
@@ -44,10 +44,19 @@ dotnet {
     }
 
     build {
-        parameters {
-            // Any parameters to be passed to msbuild, for example
-            PackageVersion = project.version
-        }
+        // Any build parameter to be passed to msbuild, as /p:key=value, for example
+        maxCpuCount = ""
+        
+        // Default values applied
+        version = project.version
+        packageVersion = project.version
+    }
+       
+    nugetPush {
+        // The API key for the server.
+        apiKey = ""
+        // Nuget feed url, default is DefaultPushSource in Nuget config if not set
+        source = ""
     }
 }
 ```

@@ -1,7 +1,6 @@
-package com.itiviti
+package com.itiviti.tasks
 
-import org.gradle.api.file.FileCollection
-import org.gradle.api.plugins.ExtensionAware
+import com.itiviti.extensions.DotnetBuildExtension
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectories
@@ -23,8 +22,15 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
 
         // explicitly restored in evaluation phase
         args("--no-restore")
-        val buildExtension = (getPluginExtension() as ExtensionAware).extensions.getByType(DotnetBuildExtension::class.java)
-        buildExtension.parameters.forEach {
+        val buildExtension = getNestedExtension(DotnetBuildExtension::class.java)
+        if (!buildExtension.version.isNullOrEmpty()) {
+            args("-p:Version=${buildExtension.version}")
+        }
+        if (!buildExtension.packageVersion.isNullOrEmpty()) {
+            args("-p:PackageVersion=${buildExtension.packageVersion}")
+        }
+
+        buildExtension.getProperties().forEach {
             args("-p:${it.key}=${it.value}")
         }
     }
