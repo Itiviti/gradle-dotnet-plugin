@@ -29,6 +29,7 @@ class DotnetPlugin: Plugin<Project> {
 
     override fun apply(project: Project) {
         project.plugins.apply(BasePlugin::class.java)
+        project.plugins.apply(PublishingPlugin::class.java)
 
         val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name)
         val extensionAware = extension as ExtensionAware
@@ -54,7 +55,6 @@ class DotnetPlugin: Plugin<Project> {
             it.logger.lifecycle("Complete parsing project")
         }
 
-        // Register a task
         project.tasks.register("dotnetClean", DotnetCleanTask::class.java) {
             with(it) {
                 group = TASK_GROUP
@@ -75,21 +75,17 @@ class DotnetPlugin: Plugin<Project> {
             with(it) {
                 group = TASK_GROUP
                 description = ".NET test driver used to execute unit tests."
+                mustRunAfter(dotnetBuild)
                 dependsOn("test")
             }
         }
 
-        val dotnetNugetPush = project.tasks.register("dotnetNugetPush", DotnetNugetPushTask::class.java) {
+        project.tasks.register("dotnetNugetPush", DotnetNugetPushTask::class.java) {
             with(it) {
                 group = TASK_GROUP
                 description = "Push to nuget registry"
-                dependsOn(dotnetBuild)
-            }
-        }
-
-        project.plugins.withType(PublishingPlugin::class.java) {
-            dotnetNugetPush.configure {
-                it.dependsOn(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)
+                dependsOn(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)
+                mustRunAfter(dotnetBuild)
             }
         }
     }

@@ -5,13 +5,15 @@ This plugin allows executing dotnet cli commands for building dotnet projects.
 Supported tasks are
 * dotnetClean
 * dotnetBuild
-* dotnetTest 
+* dotnetTest
+* dotnetNugetPush
 
 It also supports project file parsing, and some basic up-to-date checks to skip the build.
 You can access the properties via `project.dotnet.allProjects` and `project.dotnet.mainProject`.
 dotnet restore will be done at project evaluation phase to make sure all project properties can be retrieved.
 
-Plugin applies the base plugin automatically, and hooks tasks to standard build tasks, like `clean`, `assemble` and `test`.
+Plugin applies the `base` and `publishing` plugin automatically,
+and hooks tasks to standard build tasks, like `clean`, `assemble`, `test` and `publish`.
 
 ## Prerequisites
 * .Net Core SDK 3.0
@@ -45,7 +47,7 @@ dotnet {
 
     build {
         // Any build parameter to be passed to msbuild, as /p:key=value, for example
-        maxCpuCount = ""
+        maxCpuCount = ''
         
         // Default values applied
         version = project.version
@@ -54,9 +56,9 @@ dotnet {
        
     nugetPush {
         // The API key for the server.
-        apiKey = ""
+        apiKey = ''
         // Nuget feed url, default is DefaultPushSource in Nuget config if not set
-        source = ""
+        source = ''
     }
 }
 ```
