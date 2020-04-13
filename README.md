@@ -1,6 +1,7 @@
 # Gradle Dotnet Plugin [![Build Status](https://dev.azure.com/ngyukman/ngyukman/_apis/build/status/Itiviti.gradle-dotnet-plugin?branchName=master)](https://dev.azure.com/ngyukman/ngyukman/_build/latest?definitionId=1&branchName=master)
 
 This plugin allows executing dotnet cli commands for building dotnet projects.
+It supports only project with sdk format.
 
 Supported tasks are
 * dotnetClean
@@ -14,8 +15,8 @@ It also supports project file parsing, and some basic up-to-date checks to skip 
 You can access the properties via `project.dotnet.allProjects` and `project.dotnet.mainProject`.
 dotnet restore will be done at project evaluation phase to make sure all project properties can be retrieved.
 
-Plugin applies the `base` and `publishing` plugin automatically,
-and hooks tasks to standard build tasks, like `clean`, `assemble`, `build` and `publish`.
+Plugin applies the `LifecycleBasePlugin` and `PublishingPlugin` automatically,
+and hooks tasks to standard lifecycle, such as `clean`, `assemble`, `build` and `publish`.
 
 ## Prerequisites
 * .Net Core SDK 3.0
@@ -137,3 +138,16 @@ sonarqube {
 Note:
 * when `sonar.projectKey` is not set, it will use the project name as project key.
 * `sonar.cs.nunit.reportsPaths` and `sonar.cs.opencover.reportsPaths` are set automatically base on dotnet configuration
+
+## Troubleshoot
+#### dotnet pack
+It is not supported, recommended adding `<GeneratePackageOnBuild>true</GeneratePackageOnBuild>` to your csproj  
+
+####dotnet test
+To run testing successfully, make sure you have the following packages referenced
+* Microsoft.NET.Test.Sdk
+* NUnit3TestAdapter (or other relevant adapter)
+
+To have coverage report from coverlet, make sure
+* DebugType is set to `Portable`
+* Add package reference `coverlet.msbuild` or `coverlet.collector` (.net core only, for details please refer to [coverlet](https://github.com/tonerdo/coverlet))
