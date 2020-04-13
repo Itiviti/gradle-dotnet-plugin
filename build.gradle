@@ -2,6 +2,8 @@ plugins {
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.10.1'
     id 'org.jetbrains.kotlin.jvm' version '1.3.71'
+    id 'com.jfrog.bintray' version '1.8.5'
+    id 'net.researchgate.release' version '2.6.0'
     id 'groovy'
     id 'maven-publish'
     id 'jacoco'
@@ -23,6 +25,12 @@ dependencies {
     testImplementation 'org.spockframework:spock-core:1.3-groovy-2.5'
 }
 
+bintray {
+    pkg.repo = 'gradle-plugins'
+    pkg.version.gpg.sign = true
+    pkg.userOrg = 'ullink'
+}
+
 gradlePlugin {
     plugins {
         dotnet {
@@ -39,5 +47,24 @@ gradlePlugin {
 pluginBundle {
     website = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
     vcsUrl = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
+    description = 'radle-dotnet-plugin is a Gradle plugin for sdk project build'
     tags = ['dotnet', 'dotnet-core', 'msbuild', 'sonarqube', 'nunit3', 'nuget', 'gradle', 'gradle-plugin']
+
+    plugins {
+        dotnet {
+            displayName = 'Gradle Dotnet plugin'
+        }
+
+        'dotnet-sonar' {
+            displayName = 'Gradle Dotnet Sonar plugin'
+        }
+    }
+
+    mavenCoordinates {
+        groupId = 'com.itiviti.gradle'
+        artifactId = 'gradle-dotnet-plugin'
+    }
 }
+
+project.tasks.afterReleaseBuild.dependsOn project.tasks.bintrayUpload
+project.tasks.afterReleaseBuild.dependsOn project.tasks.publish
