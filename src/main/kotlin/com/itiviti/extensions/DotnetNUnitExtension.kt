@@ -12,7 +12,7 @@ open class DotnetNUnitExtension(buildDir: File) {
     var numberOfTestWorkers: Int = -1
 
     /**
-     * Output report xml destination, default to build/reports/nunit/TestResult.xml
+     * Output report xml destination, default to build/reports/nunit
      */
-    var testOutputXml: File = buildDir.resolve("reports/nunit/TestResult.xml")
+    var testOutputXml: File = buildDir.resolve("reports/nunit")
 }

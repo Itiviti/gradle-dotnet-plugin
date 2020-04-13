@@ -5,6 +5,7 @@ import com.itiviti.extensions.DotnetTestExtension
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
+import java.io.File
 
 open class DotnetTestTask: DotnetBaseTask("test") {
     private var filter: String? = null
@@ -30,7 +31,7 @@ open class DotnetTestTask: DotnetBaseTask("test") {
         }
         if (testExtension.collectCoverage) {
             args("/p:CollectCoverage=true")
-            args("/p:ExcludeByFile=${escapeQuote}${testExtension.coverletExcludeFiles}${escapeQuote}", "/p:CoverletOutputFormat=${escapeQuote}${testExtension.coverletOutputFormat}${escapeQuote}", "/p:CoverletOutput=${escapeQuote}${testExtension.coverletOutput.absolutePath}${escapeQuote}")
+            args("/p:ExcludeByFile=${escapeQuote}${testExtension.coverletExcludeFiles}${escapeQuote}", "/p:CoverletOutputFormat=${escapeQuote}${testExtension.coverletOutputFormat}${escapeQuote}", "/p:CoverletOutput=${escapeQuote}${testExtension.coverletOutput.absolutePath}/${escapeQuote}")
         }
 
         val testExtensionAware = (testExtension as ExtensionAware)

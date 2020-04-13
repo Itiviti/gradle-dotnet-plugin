@@ -13,6 +13,7 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.plugins.PublishingPlugin
+import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
 import org.reflections.util.ClasspathHelper
@@ -28,7 +29,7 @@ class DotnetPlugin: Plugin<Project> {
     }
 
     override fun apply(project: Project) {
-        project.plugins.apply(BasePlugin::class.java)
+        project.plugins.apply(LifecycleBasePlugin::class.java)
         project.plugins.apply(PublishingPlugin::class.java)
 
         val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name)
@@ -59,7 +60,7 @@ class DotnetPlugin: Plugin<Project> {
             with(it) {
                 group = TASK_GROUP
                 description = "Cleans the output of a project."
-                dependsOn("clean")
+                project.tasks.findByName(LifecycleBasePlugin.CLEAN_TASK_NAME)?.dependsOn(it)
             }
         }
 
@@ -67,7 +68,7 @@ class DotnetPlugin: Plugin<Project> {
             with(it) {
                 group = TASK_GROUP
                 description = "Builds a project and all of its dependencies."
-                dependsOn("assemble")
+                project.tasks.findByName(LifecycleBasePlugin.ASSEMBLE_TASK_NAME)?.dependsOn(it)
             }
         }
 
@@ -76,15 +77,15 @@ class DotnetPlugin: Plugin<Project> {
                 group = TASK_GROUP
                 description = ".NET test driver used to execute unit tests."
                 mustRunAfter(dotnetBuild)
-                dependsOn("test")
+                project.tasks.findByName(LifecycleBasePlugin.BUILD_TASK_NAME)
             }
         }
 
         project.tasks.register("dotnetNugetPush", DotnetNugetPushTask::class.java) {
             with(it) {
                 group = TASK_GROUP
-                description = "Push to nuget registry"
-                dependsOn(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)
+                description = "Push to nuget feed."
+                project.tasks.findByName(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)?.dependsOn(it)
                 mustRunAfter(dotnetBuild)
             }
         }

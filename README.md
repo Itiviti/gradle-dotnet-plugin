@@ -7,19 +7,43 @@ Supported tasks are
 * dotnetBuild
 * dotnetTest
 * dotnetNugetPush
+* dotnetInstallSonar
+* sonarqube
 
 It also supports project file parsing, and some basic up-to-date checks to skip the build.
 You can access the properties via `project.dotnet.allProjects` and `project.dotnet.mainProject`.
 dotnet restore will be done at project evaluation phase to make sure all project properties can be retrieved.
 
 Plugin applies the `base` and `publishing` plugin automatically,
-and hooks tasks to standard build tasks, like `clean`, `assemble`, `test` and `publish`.
+and hooks tasks to standard build tasks, like `clean`, `assemble`, `build` and `publish`.
 
 ## Prerequisites
 * .Net Core SDK 3.0
 * Gradle 6.1
 
+## To Apply
+```groovy
+plugins {
+    id 'com.itiviti.dotnet'
+}
+```
+
+or
+```groovy
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.itiviti.gradle:gradle-dotnet-plugin:1.0'
+    }
+}
+```
+
 ## Configuration
+For finding all available options and explanations, please refer to src/main/kotlin/com/itiviti/extensions/ 
+
 ```groovy
 dotnet {
     // where dotnet sdk is installed, default is to use the one specified in PATH
@@ -53,6 +77,28 @@ dotnet {
         version = project.version
         packageVersion = project.version
     }
+
+    test {
+        // filter test to be executed, or use command arguments --dotnet-tests to override (similar to --tests) 
+        filter = ''
+
+        // test run settings file, no default value
+        settings = file(".runsettings")
+        
+        // collect code coverage via coverlet, default is true
+        collectCoverage = true
+
+        // coverlet output formats, default is opencover
+        coverletOutputFormat = 'opencover'
+
+        // [sonar aware] coverlet output path, it must be a directory, default is build/reports/coverlet/ 
+        coverletOutput = file('build/reports/coverlet/')
+    
+        nunit {
+            // [sonar aware] nunit output path, default is build/reports/nunit/ 
+            testOutputXml = file('build/reports/nunit/')
+        }
+    }
        
     nugetPush {
         // The API key for the server.
@@ -60,5 +106,34 @@ dotnet {
         // Nuget feed url, default is DefaultPushSource in Nuget config if not set
         source = ''
     }
+
+    sonarqube {
+        // version of dotnet-sonarscanner to be installed as global dotnet tool, default is latest 
+        version = '3.7.1'
+    }
 }
 ```
+
+## Sonarqube
+
+Follows the same configuration syntax as the [Sonar Scanner for Gradle plugin](https://github.com/SonarSource/sonar-scanner-gradle).
+
+### Example usage
+
+```groovy
+plugins {
+    id 'com.itiviti.dotnet-sonar'
+}
+
+sonarqube {
+    properties {
+        property 'sonar.projectKey', 'my.project.key'
+        property 'sonar.language', 'cs'
+        property 'sonar.host.url', 'https://my-sonar'
+    }
+}
+```
+
+Note:
+* when `sonar.projectKey` is not set, it will use the project name as project key.
+* `sonar.cs.nunit.reportsPaths` and `sonar.cs.opencover.reportsPaths` are set automatically base on dotnet configuration
