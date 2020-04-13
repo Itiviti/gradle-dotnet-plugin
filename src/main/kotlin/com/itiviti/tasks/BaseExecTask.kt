@@ -25,7 +25,6 @@ open class BaseExecTask(vararg actions: String): Exec() {
         return project.extensions.getByType(DotnetPluginExtension::class.java)
     }
 
-    @Internal
     protected fun <T> getNestedExtension(type: Class<T>): T {
         return (getPluginExtension() as ExtensionAware).extensions.getByType(type)
     }
