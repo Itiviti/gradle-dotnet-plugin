@@ -59,4 +59,4 @@ pluginBundle {
     }
 }
 
-project.tasks.afterReleaseBuild.dependsOn project.tasks.publish
+project.tasks.afterReleaseBuild.dependsOn project.tasks.publishPlugins
