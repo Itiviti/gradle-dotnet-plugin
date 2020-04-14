@@ -33,17 +33,19 @@ or
 ```groovy
 buildscript {
     repositories {
-        mavenCentral()
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
     }
 
     dependencies {
-        classpath 'com.itiviti.gradle:gradle-dotnet-plugin:1.0'
+        classpath 'com.itiviti.gradle:gradle-dotnet-plugin:1.1.0'
     }
 }
 ```
 
 ## Configuration
-For finding all available options and explanations, please refer to src/main/kotlin/com/itiviti/extensions/ 
+For finding all available options and explanations, please refer to src/main/kotlin/com/itiviti/extensions/
 
 ```groovy
 dotnet {
@@ -53,12 +55,12 @@ dotnet {
     // the workingDir of the dotnet cli, default is the current directory
     workingDir = '.'
 
-    // the solution / csproj to be built, it will search the workingDir if not specified 
+    // the solution / csproj to be built, it will search the workingDir if not specified
     solution = 'my-solution.sln'
 
     // configuration to be used, default is Release
     configuration = 'Release'
-    
+
     // Log verbosity of dotnet command
     verbosity = 'Normal'
 
@@ -71,7 +73,7 @@ dotnet {
 
         // Forces all dependencies to be resolved even if the last restore was successful. Specifying this flag is the same as deleting the project.assets.json file.
         force = false
-    
+
         // Delay dotnet restore until dotnetBuild rather than in evaluation phase, could lead to missing project properties due to missing dependencies
         beforeBuild = false
     }
@@ -79,34 +81,34 @@ dotnet {
     build {
         // Any build parameter to be passed to msbuild, as /p:key=value, for example
         maxCpuCount = ''
-        
+
         // Default values applied
         version = project.version
         packageVersion = project.version
     }
 
     test {
-        // filter test to be executed, or use command arguments --dotnet-tests to override (similar to --tests) 
+        // filter test to be executed, or use command arguments --dotnet-tests to override (similar to --tests)
         filter = ''
 
         // test run settings file, no default value
         settings = file(".runsettings")
-        
+
         // collect code coverage via coverlet, default is true
         collectCoverage = true
 
         // coverlet output formats, default is opencover
         coverletOutputFormat = 'opencover'
 
-        // [sonar aware] coverlet output path, it must be a directory, default is build/reports/coverlet/ 
+        // [sonar aware] coverlet output path, it must be a directory, default is build/reports/coverlet/
         coverletOutput = file('build/reports/coverlet/')
-    
+
         nunit {
-            // [sonar aware] nunit output path, default is build/reports/nunit/ 
+            // [sonar aware] nunit output path, default is build/reports/nunit/
             testOutputXml = file('build/reports/nunit/')
         }
     }
-       
+
     nugetPush {
         // The API key for the server.
         apiKey = ''
@@ -115,7 +117,7 @@ dotnet {
     }
 
     sonarqube {
-        // version of dotnet-sonarscanner to be installed as global dotnet tool, default is latest 
+        // version of dotnet-sonarscanner to be installed as global dotnet tool, default is latest
         version = '3.7.1'
     }
 }
@@ -147,7 +149,7 @@ Note:
 
 ## Troubleshoot
 #### dotnet pack
-It is not supported, recommended adding `<GeneratePackageOnBuild>true</GeneratePackageOnBuild>` to your csproj  
+It is not supported, recommended adding `<GeneratePackageOnBuild>true</GeneratePackageOnBuild>` to your csproj
 
 #### dotnet test
 To run testing successfully, make sure you have the following packages referenced

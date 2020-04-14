@@ -122,3 +122,5 @@ gradle-app.setting
 build
 
 .settings/
+.project
+.classpath
