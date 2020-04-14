@@ -62,6 +62,9 @@ dotnet {
     // Log verbosity of dotnet command
     verbosity = 'Normal'
 
+    // Stop builds if pre-release is detected, can be used when building release build, default is false
+    preReleaseCheck = false
+
     restore {
         // Specifies to not cache packages and HTTP requests.
         noCache = false

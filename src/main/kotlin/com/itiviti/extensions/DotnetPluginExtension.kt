@@ -42,9 +42,14 @@ open class DotnetPluginExtension(var projectName: String) {
     var framework: String? = null
 
     /**
-     * target runtimes
+     * target runtime
      */
     var runtime: String? = null
+
+    /**
+     * If set to true, the build will fail if pre-release reference is detected, for use when building release build
+     */
+    var preReleaseCheck = false
 
     lateinit var allProjects: Map<String, DotnetProject>
 

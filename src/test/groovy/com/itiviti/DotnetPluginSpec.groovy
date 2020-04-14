@@ -13,6 +13,7 @@ package com.itiviti
 
 import com.itiviti.extensions.DotnetPluginExtension
 import com.itiviti.extensions.DotnetRestoreExtension
+import org.gradle.api.GradleException
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -57,5 +58,25 @@ class DotnetPluginSpec extends Specification {
 
         where:
         beforeBuild << [ true, false ]
+    }
+
+    def "Project evaluation fails when preReleaseCheck is set"() {
+        setup:
+        def project = ProjectBuilder.builder()
+                .build()
+        project.plugins.apply('com.itiviti.dotnet')
+
+        def pluginExtension = project.extensions.getByType(DotnetPluginExtension)
+        pluginExtension.workingDir = new File(this.class.getResource('project').toURI())
+        pluginExtension.preReleaseCheck = true
+
+        def restoreExtension = pluginExtension.extensions.getByType(DotnetRestoreExtension)
+        restoreExtension.beforeBuild = true
+
+        when:
+        project.evaluate()
+
+        then:
+        thrown(GradleException)
     }
 }

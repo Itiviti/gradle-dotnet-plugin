@@ -55,6 +55,24 @@ class DotnetPlugin: Plugin<Project> {
 
             parseProjects(project, extension)
 
+            if (extension.preReleaseCheck) {
+                it.logger.lifecycle("Check pre-release references")
+
+                val validated = extension.allProjects.values.all { dotnetProject ->
+                    val preReleases = dotnetProject.getPackageReferences().filter { ref -> ref.version?.contains("-") == true }
+                    if (preReleases.isNotEmpty()) {
+                        project.logger.error("Pre-release references detected in ${dotnetProject.getProjectName()}")
+                        preReleases.forEach { ref ->
+                            project.logger.error("    * ${ref.name}: ${ref.version}")
+                        }
+                    }
+                    preReleases.isEmpty()
+                }
+                if (!validated) {
+                    throw GradleException("Aborting build due to pre-release references detected.")
+                }
+            }
+
             it.logger.lifecycle("Complete parsing project")
         }
 
