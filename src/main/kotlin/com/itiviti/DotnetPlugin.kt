@@ -6,11 +6,9 @@ import com.itiviti.tasks.DotnetCleanTask
 import com.itiviti.tasks.DotnetNugetPushTask
 import com.itiviti.tasks.DotnetTestTask
 import groovy.json.JsonSlurper
-import kotlinx.coroutines.*
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.plugins.PublishingPlugin
 import org.gradle.language.base.plugins.LifecycleBasePlugin
@@ -109,7 +107,7 @@ class DotnetPlugin: Plugin<Project> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseProjects(project: Project, extension: DotnetPluginExtension) = runBlocking {
+    private fun parseProjects(project: Project, extension: DotnetPluginExtension) {
         var targetFile: File?
         if (extension.solution.isNullOrBlank()) {
             // guess the solution similar to dotnet cli, i.e. searches the current working directory for a file that has a file extension that ends in either proj or sln and uses that file.
@@ -125,9 +123,7 @@ class DotnetPlugin: Plugin<Project> {
             throw GradleException("Cannot find a valid project file, please setup workingDir / solution correctly")
         }
 
-        val tempDir = withContext(Dispatchers.IO) {
-            Files.createDirectories(File(project.buildDir, "tmp/dotnet").toPath())
-        }
+        val tempDir = Files.createDirectories(File(project.buildDir, "tmp/dotnet").toPath())
 
         project.logger.info("  Extracting parser to {}", tempDir)
 
