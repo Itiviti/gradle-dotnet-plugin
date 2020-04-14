@@ -12,12 +12,15 @@
 package com.itiviti
 
 import com.itiviti.extensions.DotnetPluginExtension
+import com.itiviti.extensions.DotnetRestoreExtension
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class DotnetPluginSpec extends Specification {
 
-    def "Project is restored and parsed correctly in evaluate()"() {
+    @Unroll
+    def "Project is restored and parsed correctly in evaluate() with beforeBuild = #beforeBuild"() {
         setup:
         def project = ProjectBuilder.builder()
                 .build()
@@ -26,6 +29,8 @@ class DotnetPluginSpec extends Specification {
         def pluginExtension = project.extensions.getByType(DotnetPluginExtension)
         pluginExtension.projectName = 'core'
         pluginExtension.workingDir = new File(this.class.getResource('project').toURI())
+        def restoreExtension = pluginExtension.extensions.getByType(DotnetRestoreExtension)
+        restoreExtension.beforeBuild = beforeBuild
 
         when:
         project.evaluate()
@@ -49,5 +54,8 @@ class DotnetPluginSpec extends Specification {
           DotnetProject.BuildAction.Resource].each {
             assert pluginExtension.mainProject.getSources(it).size() == 1
         }
+
+        where:
+        beforeBuild << [ true, false ]
     }
 }

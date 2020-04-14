@@ -68,6 +68,9 @@ dotnet {
 
         // Forces all dependencies to be resolved even if the last restore was successful. Specifying this flag is the same as deleting the project.assets.json file.
         force = false
+    
+        // Delay dotnet restore until dotnetBuild rather than in evaluation phase, could lead to missing project properties due to missing dependencies
+        beforeBuild = false
     }
 
     build {

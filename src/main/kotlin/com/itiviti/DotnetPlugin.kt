@@ -18,6 +18,7 @@ import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -41,13 +42,16 @@ class DotnetPlugin: Plugin<Project> {
         extensionAware.extensions.create("nugetPush", DotnetNugetPushExtension::class.java)
 
         project.afterEvaluate {
-            it.logger.lifecycle("Start restoring packages")
 
-            if (restore(it, extension, restoreExtension) != 0) {
-                throw GradleException("dotnet restore fails")
+            if (!restoreExtension.beforeBuild) {
+                it.logger.lifecycle("Start restoring packages")
+
+                if (restore(it, extension, restoreExtension) != 0) {
+                    throw GradleException("dotnet restore fails")
+                }
+
+                it.logger.lifecycle("Complete restoring packages")
             }
-
-            it.logger.lifecycle("Complete restoring packages")
 
             it.logger.lifecycle("Start parsing project")
 
@@ -91,52 +95,17 @@ class DotnetPlugin: Plugin<Project> {
         }
     }
 
-    private fun restore(project: Project, extension: DotnetPluginExtension, restoreExtension: DotnetRestoreExtension): Int = runBlocking {
-        val command = mutableListOf(extension.dotnetExecutable, "restore")
-
-        if (!extension.solution.isNullOrBlank()) {
-            command.add(extension.solution!!)
-        }
-        command.add("--verbosity")
-        command.add(extension.verbosity)
-        if (restoreExtension.force) {
-            command.add("--force")
-        }
-        if (restoreExtension.noCache) {
-            command.add("--no-cache")
-        }
-        restoreExtension.source.forEach {
-            command.add("--source")
-            command.add(it)
-        }
-
-        project.logger.info("  Start executing command: {} in {}", command.joinToString(" "), extension.workingDir)
-
-        val restore = async (Dispatchers.IO) restoreCoroutine@ {
-            val process = ProcessBuilder(command)
-                    .directory(extension.workingDir)
-                    .start()
-
-            val info = launch(Dispatchers.IO) {
-                process.inputStream.reader().forEachLine { line ->
-                    project.logger.info(line)
-                }
+    private fun restore(project: Project, extension: DotnetPluginExtension, restoreExtension: DotnetRestoreExtension): Int {
+        return project.exec { exec ->
+            exec.commandLine(extension.dotnetExecutable)
+            exec.workingDir(extension.workingDir)
+            exec.args("restore")
+            if (!extension.solution.isNullOrBlank()) {
+                exec.args(extension.solution!!)
             }
-
-            val error = launch(Dispatchers.IO) {
-                process.errorStream.reader().forEachLine { line ->
-                    project.logger.error(line)
-                }
-            }
-            process.waitFor()
-
-            info.join()
-            error.join()
-
-            return@restoreCoroutine process.exitValue()
-        }
-
-        return@runBlocking restore.await()
+            exec.args("--verbosity", extension.verbosity)
+            DotnetBuildTask.restoreArgs(restoreExtension, exec)
+        }.exitValue
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -168,39 +137,20 @@ class DotnetPlugin: Plugin<Project> {
         }
 
         val arg = "{${if (!extension.platform.isNullOrBlank()) "'Platform':'${extension.platform}'," else ""}'Configuration':'${extension.configuration}'}"
-        val command = listOf(extension.dotnetExecutable, "run", "--", targetFile.absolutePath, arg)
-        project.logger.info("  Start executing command: {} in {}", command.joinToString(" "), tempDir)
-
-        val jsonText = async(Dispatchers.IO) {
-            val process = ProcessBuilder(command)
-                    .directory(tempDir.toFile())
-                    .start()
-
-            val error = launch(Dispatchers.IO) {
-                process.errorStream.reader().forEachLine {
-                    project.logger.error(it)
-                }
-            }
-
-            val result = async(Dispatchers.IO) parser@ {
-                val sb = StringBuilder()
-                process.inputStream.reader().forEachLine {
-                    sb.appendln(it)
-                }
-                return@parser sb.toString()
-            }
-
-            process.waitFor()
-            error.join()
-
-            if (process.exitValue() != 0) {
-                throw GradleException("Parse project file $targetFile failed")
-            }
-
-            return@async result.await()
+        val outputStream = ByteArrayOutputStream()
+        val parser = project.exec { exec ->
+            exec.commandLine(extension.dotnetExecutable)
+            exec.workingDir(tempDir.toFile())
+            exec.args("run", "--", targetFile.absolutePath, arg)
+            exec.standardOutput = outputStream
         }
 
-        val result = JsonSlurper().parseText(jsonText.await()) as MutableMap<String, Any>
+        if (parser.exitValue != 0) {
+            throw GradleException("Failed to parse project.")
+        }
+
+        val processOutput = outputStream.toString()
+        val result = JsonSlurper().parseText(processOutput) as MutableMap<String, Any>
 
         extension.allProjects = result.map { entry -> entry.key to DotnetProject(entry.value as Map<String, Any>) }.toMap()
     }

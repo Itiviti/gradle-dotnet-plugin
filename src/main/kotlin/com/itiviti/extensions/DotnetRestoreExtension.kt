@@ -17,4 +17,9 @@ open class DotnetRestoreExtension {
      * Specifies a NuGet package source to use during the restore operation. This setting overrides all of the sources specified in the nuget.config files.
      */
     var source: MutableList<String> = mutableListOf()
+
+    /**
+     * Delay dotnet restore until dotnetBuild rather than in evaluation phase, could lead to missing properties due to missing dependencies
+     */
+    var beforeBuild = false
 }
