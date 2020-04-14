@@ -1,4 +1,4 @@
-# Gradle Dotnet Plugin [![Build Status](https://dev.azure.com/ngyukman/ngyukman/_apis/build/status/Itiviti.gradle-dotnet-plugin?branchName=master)](https://dev.azure.com/ngyukman/ngyukman/_build/latest?definitionId=1&branchName=master)
+# Gradle Dotnet Plugin [![Build Status](https://dev.azure.com/ngyukman/ngyukman/_apis/build/status/Itiviti.gradle-dotnet-plugin?branchName=master)](https://dev.azure.com/ngyukman/ngyukman/_build/latest?definitionId=1&branchName=master) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/Itiviti/gradle-dotnet-plugin)
 
 This plugin allows executing dotnet cli commands for building dotnet projects.
 It supports only project with sdk format.
