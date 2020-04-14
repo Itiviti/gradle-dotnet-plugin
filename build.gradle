@@ -28,7 +28,7 @@ gradlePlugin {
             id = 'com.itiviti.dotnet'
             implementationClass = 'com.itiviti.DotnetPlugin'
         }
-        'dotnet-sonar' {
+        sonar {
             id = 'com.itiviti.dotnet-sonar'
             implementationClass = 'com.itiviti.DotnetSonarPlugin'
         }
@@ -38,16 +38,19 @@ gradlePlugin {
 pluginBundle {
     website = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
     vcsUrl = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
-    description = 'gradle-dotnet-plugin is a Gradle plugin for sdk project build'
-    tags = ['dotnet', 'dotnet-core', 'msbuild', 'sonarqube', 'nunit3', 'nuget', 'gradle', 'gradle-plugin']
+    description = 'gradle-dotnet-plugin is a Gradle plugin for .net sdk project build'
 
     plugins {
         dotnet {
             displayName = 'Gradle Dotnet plugin'
+            description = 'Plugin for building .net sdk project'
+            tags = ['dotnet', '.net core', 'msbuild', 'nunit', 'nuget']
         }
 
-        'dotnet-sonar' {
+        sonar {
             displayName = 'Gradle Dotnet Sonar plugin'
+            description = 'Plugin for wrapping .net sdk project build with sonar'
+            tags = ['dotnet', '.net core', 'msbuild', 'sonarqube']
         }
     }
 
