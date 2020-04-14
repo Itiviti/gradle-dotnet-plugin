@@ -146,7 +146,7 @@ class DotnetPlugin: Plugin<Project> {
         }
 
         val processOutput = outputStream.toString()
-        val result = JsonSlurper().parseText(processOutput) as MutableMap<String, Any>
+        val result = JsonSlurper().parseText(processOutput.substring(processOutput.indexOf('{'))) as MutableMap<String, Any>
 
         extension.allProjects = result.map { entry -> entry.key to DotnetProject(entry.value as Map<String, Any>) }.toMap()
     }
