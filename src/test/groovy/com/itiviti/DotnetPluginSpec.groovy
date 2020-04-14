@@ -14,6 +14,12 @@ package com.itiviti
 import com.itiviti.extensions.DotnetPluginExtension
 import com.itiviti.extensions.DotnetRestoreExtension
 import org.gradle.api.GradleException
+import org.gradle.api.internal.TaskInternal
+import org.gradle.api.internal.project.ProjectInternal
+import org.gradle.api.internal.tasks.TaskExecuter
+import org.gradle.api.internal.tasks.TaskStateInternal
+import org.gradle.api.internal.tasks.execution.DefaultTaskExecutionContext
+import org.gradle.execution.ProjectExecutionServices
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -78,5 +84,30 @@ class DotnetPluginSpec extends Specification {
 
         then:
         thrown(GradleException)
+    }
+
+    def ".net sdk project can be built"() {
+        setup:
+        def project = ProjectBuilder.builder()
+                .build()
+        project.version = '9.14.0'
+        project.plugins.apply('com.itiviti.dotnet')
+
+        def pluginExtension = project.extensions.getByType(DotnetPluginExtension)
+        pluginExtension.workingDir = new File(this.class.getResource('project').toURI())
+
+        def buildTask = project.tasks.getByName("build")
+        def executionServices = new ProjectExecutionServices(project as ProjectInternal)
+
+        when:
+        project.evaluate()
+        project.gradle.taskGraph.addEntryTasks([buildTask])
+        project.gradle.taskGraph.populate()
+
+        and:
+        executionServices.get(TaskExecuter).execute(buildTask as TaskInternal, buildTask.state as TaskStateInternal, new DefaultTaskExecutionContext(null))
+
+        then:
+        buildTask.state.failure == null
     }
 }
