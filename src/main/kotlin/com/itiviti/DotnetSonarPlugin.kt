@@ -11,8 +11,6 @@ import com.itiviti.tasks.DotnetTestTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.process.ExecResult
-import org.gradle.process.ExecSpec
 import org.sonarqube.gradle.ActionBroadcast
 import org.sonarqube.gradle.SonarPropertyComputer
 import org.sonarqube.gradle.SonarQubeExtension
@@ -43,7 +41,7 @@ class DotnetSonarPlugin: Plugin<Project> {
 
         project.plugins.withType(DotnetPlugin::class.java) {
             (project.extensions.getByType(DotnetPluginExtension::class.java) as ExtensionAware)
-                    .extensions.create(SonarQubeExtension.SONARQUBE_EXTENSION_NAME, DotnetSonarExtension::class.java, project.gradle.gradleUserHomeDir)
+                    .extensions.create(SonarQubeExtension.SONARQUBE_EXTENSION_NAME, DotnetSonarExtension::class.java, project.buildDir)
         }
 
         val sonarInstallTask = project.tasks.register("dotnetInstallSonar", DotnetInstallSonarTask::class.java) {

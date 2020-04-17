@@ -2,8 +2,8 @@ package com.itiviti.extensions
 
 import java.io.File
 
-open class DotnetSonarExtension(gradleUserHomeDir: File) {
+open class DotnetSonarExtension(buildDir: File) {
     var version: String? = null
 
-    var toolPath: File = gradleUserHomeDir.resolve("/caches/dotnet")
+    var toolPath: File = buildDir.resolve("dotnet/tool")
 }
