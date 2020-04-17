@@ -11,6 +11,6 @@ open class DotnetInstallSonarTask: BaseExecTask("tool", "install", "dotnet-sonar
             args("--version", version)
         }
 
-        args("--tool-path", extension.toolPath)
+        args("--tool-path", extension.toolPath.absolutePath)
     }
 }
