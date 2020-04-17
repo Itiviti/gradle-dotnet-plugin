@@ -97,7 +97,7 @@ class DotnetPlugin: Plugin<Project> {
                 group = TASK_GROUP
                 description = ".NET test driver used to execute unit tests."
                 mustRunAfter(dotnetBuild)
-                project.tasks.findByName(LifecycleBasePlugin.BUILD_TASK_NAME)
+                project.tasks.findByName(LifecycleBasePlugin.BUILD_TASK_NAME)?.dependsOn(it)
             }
         }
 
