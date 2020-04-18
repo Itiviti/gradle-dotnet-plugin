@@ -1,9 +1,11 @@
 package com.itiviti.tasks
 
 import com.itiviti.extensions.DotnetSonarExtension
+import org.gradle.api.tasks.Exec
 
-open class DotnetSonarTask: BaseExecTask("sonarscanner", "end") {
+open class DotnetSonarTask: Exec() {
     init {
-        args("--tool-path", getNestedExtension(DotnetSonarExtension::class.java).toolPath.absolutePath)
+        commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
+        args("end")
     }
 }

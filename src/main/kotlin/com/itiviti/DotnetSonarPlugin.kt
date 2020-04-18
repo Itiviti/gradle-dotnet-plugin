@@ -41,7 +41,7 @@ class DotnetSonarPlugin: Plugin<Project> {
 
         project.plugins.withType(DotnetPlugin::class.java) {
             (project.extensions.getByType(DotnetPluginExtension::class.java) as ExtensionAware)
-                    .extensions.create(SonarQubeExtension.SONARQUBE_EXTENSION_NAME, DotnetSonarExtension::class.java, project.buildDir)
+                    .extensions.create(SonarQubeExtension.SONARQUBE_EXTENSION_NAME, DotnetSonarExtension::class.java)
         }
 
         val sonarInstallTask = project.tasks.register("dotnetInstallSonar", DotnetInstallSonarTask::class.java) {
@@ -78,9 +78,8 @@ class DotnetSonarPlugin: Plugin<Project> {
                     val extension = project.extensions.getByType(DotnetPluginExtension::class.java)
                     setupReportPath(sonarQubeExtension, extension)
                     project.exec { exec ->
-                        exec.commandLine = listOf(extension.dotnetExecutable)
-                        exec.args("sonarscanner", "begin")
-                        exec.args("--tool-path", (extension as ExtensionAware).extensions.getByType(DotnetSonarExtension::class.java).toolPath)
+                        exec.commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
+                        exec.args("begin")
                         buildArgs(computeSonarProperties(project)).forEach {
                             exec.args(it)
                         }

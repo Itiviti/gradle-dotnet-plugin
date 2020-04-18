@@ -1,5 +1,6 @@
 package com.itiviti.tasks
 
+import com.itiviti.extensions.DotnetRestoreExtension
 import com.itiviti.extensions.DotnetSonarExtension
 
 open class DotnetInstallSonarTask: BaseExecTask("tool", "update", "dotnet-sonarscanner") {
@@ -11,6 +12,10 @@ open class DotnetInstallSonarTask: BaseExecTask("tool", "update", "dotnet-sonars
             args("--version", version)
         }
 
-        args("--tool-path", extension.toolPath.absolutePath)
+        val restoreExtension = getNestedExtension(DotnetRestoreExtension::class.java)
+        restoreExtension.source.forEach {
+            args("--add-source", it)
+        }
+        args("--tool-path", project.buildDir.resolve(DotnetSonarExtension.toolPath))
     }
 }
