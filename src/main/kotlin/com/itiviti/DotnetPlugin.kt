@@ -11,6 +11,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.plugins.PublishingPlugin
+import org.gradle.api.tasks.Delete
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
@@ -76,38 +77,46 @@ class DotnetPlugin: Plugin<Project> {
             it.logger.lifecycle("Complete parsing project")
         }
 
-        project.tasks.register("dotnetClean", DotnetCleanTask::class.java) {
+        val dotnetClean = project.tasks.register("dotnetClean", DotnetCleanTask::class.java) {
             with(it) {
                 group = TASK_GROUP
                 description = "Cleans the output of a project."
-                project.tasks.findByName(LifecycleBasePlugin.CLEAN_TASK_NAME)?.dependsOn(it)
             }
+        }
+        project.tasks.named(LifecycleBasePlugin.CLEAN_TASK_NAME).configure {
+            it.dependsOn(dotnetClean)
         }
 
         val dotnetBuild = project.tasks.register("dotnetBuild", DotnetBuildTask::class.java) {
             with(it) {
                 group = TASK_GROUP
                 description = "Builds a project and all of its dependencies."
-                project.tasks.findByName(LifecycleBasePlugin.ASSEMBLE_TASK_NAME)?.dependsOn(it)
             }
         }
+        project.tasks.named(LifecycleBasePlugin.ASSEMBLE_TASK_NAME).configure {
+            it.dependsOn(dotnetBuild)
+        }
 
-        project.tasks.register("dotnetTest", DotnetTestTask::class.java) {
+        val dotnetTest = project.tasks.register("dotnetTest", DotnetTestTask::class.java) {
             with(it) {
                 group = TASK_GROUP
                 description = ".NET test driver used to execute unit tests."
                 mustRunAfter(dotnetBuild)
-                project.tasks.findByName(LifecycleBasePlugin.BUILD_TASK_NAME)?.dependsOn(it)
             }
         }
+        project.tasks.named(LifecycleBasePlugin.BUILD_TASK_NAME).configure {
+            it.dependsOn(dotnetTest)
+        }
 
-        project.tasks.register("dotnetNugetPush", DotnetNugetPushTask::class.java) {
+        val dotnetNugetPush = project.tasks.register("dotnetNugetPush", DotnetNugetPushTask::class.java) {
             with(it) {
                 group = TASK_GROUP
                 description = "Push to nuget feed."
-                project.tasks.findByName(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME)?.dependsOn(it)
                 mustRunAfter(dotnetBuild)
             }
+        }
+        project.tasks.named(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME).configure {
+            it.dependsOn(dotnetNugetPush)
         }
     }
 

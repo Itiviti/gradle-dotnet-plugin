@@ -19,6 +19,7 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.internal.tasks.TaskExecuter
 import org.gradle.api.internal.tasks.TaskStateInternal
 import org.gradle.api.internal.tasks.execution.DefaultTaskExecutionContext
+import org.gradle.api.provider.Provider
 import org.gradle.execution.ProjectExecutionServices
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
@@ -61,6 +62,10 @@ class DotnetPluginSpec extends Specification {
           DotnetProject.BuildAction.Resource].each {
             assert pluginExtension.mainProject.getSources(it).size() == 1
         }
+        project.tasks.clean.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetClean' }.size() > 0
+        project.tasks.assemble.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetBuild' }.size() > 0
+        project.tasks.build.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetTest' }.size() > 0
+        project.tasks.publish.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetNugetPush' }.size() > 0
 
         where:
         beforeBuild << [ true, false ]
