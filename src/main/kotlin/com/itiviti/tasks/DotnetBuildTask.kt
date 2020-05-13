@@ -45,10 +45,10 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
         }
 
         val buildExtension = getNestedExtension(DotnetBuildExtension::class.java)
-        if (!buildExtension.version.isNullOrEmpty()) {
+        if (buildExtension.version.isNotEmpty()) {
             args("-p:Version=${buildExtension.version}")
         }
-        if (!buildExtension.packageVersion.isNullOrEmpty()) {
+        if (buildExtension.packageVersion.isNotEmpty()) {
             args("-p:PackageVersion=${buildExtension.packageVersion}")
         }
 

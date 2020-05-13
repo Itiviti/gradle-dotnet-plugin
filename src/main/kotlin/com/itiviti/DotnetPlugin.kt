@@ -1,5 +1,6 @@
 package com.itiviti
 
+import com.google.gson.Gson
 import com.itiviti.extensions.*
 import com.itiviti.tasks.DotnetBuildTask
 import com.itiviti.tasks.DotnetCleanTask
@@ -35,7 +36,7 @@ class DotnetPlugin: Plugin<Project> {
         val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name)
         val extensionAware = extension as ExtensionAware
         val restoreExtension = extensionAware.extensions.create("restore", DotnetRestoreExtension::class.java)
-        extensionAware.extensions.create("build", DotnetBuildExtension::class.java, project.version)
+        val buildExtension = extensionAware.extensions.create("build", DotnetBuildExtension::class.java, project.version)
         val testExtension = extensionAware.extensions.create("test", DotnetTestExtension::class.java, project.buildDir)
         (testExtension as ExtensionAware).extensions.create("nunit", DotnetNUnitExtension::class.java, project.buildDir)
         extensionAware.extensions.create("nugetPush", DotnetNugetPushExtension::class.java)
@@ -54,7 +55,7 @@ class DotnetPlugin: Plugin<Project> {
 
             it.logger.lifecycle("Start parsing project")
 
-            parseProjects(project, extension)
+            parseProjects(project, extension, buildExtension)
 
             if (extension.preReleaseCheck) {
                 it.logger.lifecycle("Check pre-release references")
@@ -134,7 +135,7 @@ class DotnetPlugin: Plugin<Project> {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun parseProjects(project: Project, extension: DotnetPluginExtension) {
+    private fun parseProjects(project: Project, extension: DotnetPluginExtension, buildExtension: DotnetBuildExtension) {
         var targetFile: File?
         if (extension.solution.isNullOrBlank()) {
             // guess the solution similar to dotnet cli, i.e. searches the current working directory for a file that has a file extension that ends in either proj or sln and uses that file.
@@ -159,12 +160,23 @@ class DotnetPlugin: Plugin<Project> {
             Files.copy(javaClass.classLoader.getResourceAsStream(it)!!, tempDir.resolve(File(it).name), StandardCopyOption.REPLACE_EXISTING)
         }
 
-        val arg = "{${if (!extension.platform.isNullOrBlank()) "'Platform':'${extension.platform}'," else ""}'Configuration':'${extension.configuration}'}"
+        val args = buildExtension.getProperties().toMutableMap()
+        args["Configuration"] = extension.configuration
+        if (!extension.platform.isNullOrBlank()) {
+            args["Platform"] = extension.platform!!
+        }
+        if (buildExtension.version.isNotEmpty()) {
+            args["Version"] = buildExtension.version
+        }
+        if (buildExtension.packageVersion.isNotEmpty()) {
+            args["PackageVersion"] = buildExtension.packageVersion
+        }
+
         val outputStream = ByteArrayOutputStream()
         val parser = project.exec { exec ->
             exec.commandLine(extension.dotnetExecutable)
             exec.workingDir(tempDir.toFile())
-            exec.args("run", "--", targetFile.absolutePath, arg)
+            exec.args("run", "--", targetFile.absolutePath, Gson().toJson(args))
             exec.standardOutput = outputStream
         }
 
