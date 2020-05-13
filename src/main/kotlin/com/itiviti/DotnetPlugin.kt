@@ -33,7 +33,7 @@ class DotnetPlugin: Plugin<Project> {
         project.plugins.apply(LifecycleBasePlugin::class.java)
         project.plugins.apply(PublishingPlugin::class.java)
 
-        val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name)
+        val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name, project.projectDir)
         val extensionAware = extension as ExtensionAware
         val restoreExtension = extensionAware.extensions.create("restore", DotnetRestoreExtension::class.java)
         val buildExtension = extensionAware.extensions.create("build", DotnetBuildExtension::class.java, project.version)
@@ -176,7 +176,7 @@ class DotnetPlugin: Plugin<Project> {
         val parser = project.exec { exec ->
             exec.commandLine(extension.dotnetExecutable)
             exec.workingDir(tempDir.toFile())
-            exec.args("run", "--", targetFile.absolutePath, Gson().toJson(args))
+            exec.args("run", "--", targetFile, Gson().toJson(args).replace('"', '\''))
             exec.standardOutput = outputStream
         }
 

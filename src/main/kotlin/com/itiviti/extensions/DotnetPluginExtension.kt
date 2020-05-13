@@ -4,7 +4,7 @@ import com.itiviti.DotnetProject
 import org.gradle.api.GradleException
 import java.io.File
 
-open class DotnetPluginExtension(var projectName: String) {
+open class DotnetPluginExtension(var projectName: String, projectDir: File) {
 
     /**
      * Support quiet, minimal, normal, detailed, and diagnostic
@@ -19,7 +19,7 @@ open class DotnetPluginExtension(var projectName: String) {
     /**
      * Working dir for executing commands, default to project dir
      */
-    var workingDir: File = File(".")
+    var workingDir: File = projectDir
 
     /**
      * project file, either .sln or .csproj, default to the project found in the [workingDir]
