@@ -28,7 +28,7 @@ import spock.lang.Unroll
 class DotnetPluginSpec extends Specification {
 
     @Unroll
-    def "Project is restored and parsed correctly in evaluate() with beforeBuild = #beforeBuild"() {
+    def "Project is restored and parsed correctly with beforeBuild = #beforeBuild"() {
         setup:
         def project = ProjectBuilder.builder()
                 .build()
@@ -40,10 +40,7 @@ class DotnetPluginSpec extends Specification {
         def restoreExtension = pluginExtension.extensions.getByType(DotnetRestoreExtension)
         restoreExtension.beforeBuild = beforeBuild
 
-        when:
-        project.evaluate()
-
-        then:
+        expect:
         pluginExtension.allProjects.size() == 2
 
         pluginExtension.mainProject.projectName == 'core'

@@ -2,9 +2,10 @@ package com.itiviti.extensions
 
 import com.itiviti.DotnetProject
 import org.gradle.api.GradleException
+import org.gradle.api.Project
 import java.io.File
 
-open class DotnetPluginExtension(var projectName: String, projectDir: File) {
+open class DotnetPluginExtension(var projectName: String, projectDir: File, projectEvaluate: () -> Map<String, DotnetProject>) {
 
     /**
      * Support quiet, minimal, normal, detailed, and diagnostic
@@ -51,7 +52,7 @@ open class DotnetPluginExtension(var projectName: String, projectDir: File) {
      */
     var preReleaseCheck = false
 
-    lateinit var allProjects: Map<String, DotnetProject>
+    val allProjects: Map<String, DotnetProject> by lazy { projectEvaluate() }
 
     fun getMainProject(): DotnetProject {
         return allProjects[projectName] ?: throw GradleException("$projectName not found in parsed projects")
