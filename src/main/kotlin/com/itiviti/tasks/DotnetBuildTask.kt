@@ -12,6 +12,9 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
 
     companion object {
         fun restoreArgs(restoreExtension: DotnetRestoreExtension, exec: ExecSpec) {
+            if (restoreExtension.configFile) {
+                exec.args("--configfile \"$restoreExtension.configFile\"")
+            }
             if (restoreExtension.force) {
                 exec.args("--force")
             }
