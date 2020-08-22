@@ -4,6 +4,10 @@ import javax.print.DocFlavor
 
 open class DotnetRestoreExtension {
     /**
+    * Config file for custom packages
+    */
+    var configFile = ""
+    /**
      * Specifies to not cache packages and HTTP requests.
      */
     var noCache = false
