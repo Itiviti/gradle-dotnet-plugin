@@ -89,6 +89,27 @@ class DotnetSonarPlugin: Plugin<Project> {
         }
     }
 
+    fun buildArgs(properties: Map<String, Any?>): List<String> {
+        val mandatoryArgs = MANDATORY_ARGS.map {
+            "/${it.key}:${properties[it.value]}"
+        }
+
+        val otherArgs = properties.filter {
+            !MANDATORY_ARGS.values.contains(it.key) && !IGNORED_PROPERTIES.contains(it.key) && !it.value?.toString().isNullOrEmpty()
+        }.map {
+            "/d:${it.key}=${it.value}"
+        }
+
+        return mandatoryArgs + otherArgs
+    }
+
+    fun computeSonarProperties(project: Project): Map<String, Any?> {
+        val actionBroadcastMap = mutableMapOf<String, ActionBroadcast<SonarQubeProperties>>()
+        actionBroadcastMap[project.path] = actionBroadcast
+        val propertyComputer = SonarPropertyComputer(actionBroadcastMap, project)
+        return propertyComputer.computeSonarProperties()
+    }
+
     private fun setupReportPath(sonarQube: SonarQubeExtension, extension: DotnetPluginExtension) {
         val testExtension = (extension as ExtensionAware).extensions.getByType(DotnetTestExtension::class.java)
         val nunitExtension = (testExtension as ExtensionAware).extensions.getByType(DotnetNUnitExtension::class.java)
@@ -104,26 +125,5 @@ class DotnetSonarPlugin: Plugin<Project> {
                 it.property(OPENCOVER_REPORT_PATH, testExtension.coverletOutput.resolve("*.xml").absolutePath)
             }
         }
-    }
-
-    private fun buildArgs(properties: Map<String, Any?>): List<String> {
-        val mandatoryArgs = MANDATORY_ARGS.map {
-            "/${it.key}:${properties[it.value]}"
-        }
-
-        val otherArgs = properties.filter {
-            !MANDATORY_ARGS.values.contains(it.key) && !IGNORED_PROPERTIES.contains(it.key) && !it.value?.toString().isNullOrEmpty()
-        }.map {
-            "/d:${it.key}=${it.value}"
-        }
-
-        return mandatoryArgs + otherArgs
-    }
-
-    private fun computeSonarProperties(project: Project): Map<String, Any?> {
-        val actionBroadcastMap = mutableMapOf<String, ActionBroadcast<SonarQubeProperties>>()
-        actionBroadcastMap[project.path] = actionBroadcast
-        val propertyComputer = SonarPropertyComputer(actionBroadcastMap, project)
-        return propertyComputer.computeSonarProperties()
     }
 }
