@@ -83,20 +83,17 @@ class DotnetSonarPlugin: Plugin<Project> {
                 }
 
                 // sonarqube is in task graph and executed
-                project.gradle.taskGraph.whenReady { graph ->
-                    if (graph.hasTask("${project.path}:${SonarQubeExtension.SONARQUBE_TASK_NAME}") || graph.hasTask(":${SonarQubeExtension.SONARQUBE_TASK_NAME}")) {
-                        project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was detected. Begin sonarscanner")
+                val graph = project.gradle.taskGraph
+                if (graph.hasTask("${project.path}:${SonarQubeExtension.SONARQUBE_TASK_NAME}") || graph.hasTask(":${SonarQubeExtension.SONARQUBE_TASK_NAME}")) {
+                    project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was detected. Begin sonarscanner")
 
-                        task.doFirst {
-                            setupReportPath(sonarQubeExtension, extension)
-                            project.exec { exec ->
-                                exec.commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
-                                exec.args("begin")
+                    setupReportPath(sonarQubeExtension, extension)
+                    project.exec { exec ->
+                        exec.commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
+                        exec.args("begin")
 
-                                buildArgs(sonarQubeProperties).forEach {
-                                    exec.args(it)
-                                }
-                            }
+                        buildArgs(sonarQubeProperties).forEach {
+                            exec.args(it)
                         }
                     }
                 }
