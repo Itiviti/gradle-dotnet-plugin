@@ -24,6 +24,7 @@ class DotnetSonarPlugin: Plugin<Project> {
             "n" to "sonar.projectName",
             "v" to "sonar.projectVersion"
         )
+        const val LOGIN_PROPERTY = "sonar.login"
 
         const val NUNIT_REPORT_PATH = "sonar.cs.nunit.reportsPaths"
         const val OPENCOVER_REPORT_PATH = "sonar.cs.opencover.reportsPaths"
@@ -32,6 +33,10 @@ class DotnetSonarPlugin: Plugin<Project> {
             // is automatically set and cannot be overridden on the command line
             "sonar.working.directory"
         )
+
+        private fun buildArg(key: String, value: Any?): String {
+            return "/d:${key}=${value}"
+        }
     }
 
     private val actionBroadcast = ActionBroadcast<SonarQubeProperties>()
@@ -80,8 +85,12 @@ class DotnetSonarPlugin: Plugin<Project> {
                     project.exec { exec ->
                         exec.commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
                         exec.args("begin")
-                        buildArgs(computeSonarProperties(project)).forEach {
+                        val sonarQubeProperties = computeSonarProperties(project)
+                        buildArgs(sonarQubeProperties).forEach {
                             exec.args(it)
+                        }
+                        if (sonarQubeProperties.containsKey(LOGIN_PROPERTY)) {
+                            sonarTask.get().args(buildArg(LOGIN_PROPERTY, sonarQubeProperties[LOGIN_PROPERTY]))
                         }
                     }
                 }
@@ -113,9 +122,7 @@ class DotnetSonarPlugin: Plugin<Project> {
 
         val otherArgs = properties.filter {
             !MANDATORY_ARGS.values.contains(it.key) && !IGNORED_PROPERTIES.contains(it.key) && !it.value?.toString().isNullOrEmpty()
-        }.map {
-            "/d:${it.key}=${it.value}"
-        }
+        }.map { buildArg(it.key, it.value) }
 
         return mandatoryArgs + otherArgs
     }

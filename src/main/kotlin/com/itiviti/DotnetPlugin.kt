@@ -64,7 +64,7 @@ class DotnetPlugin: Plugin<Project> {
 
             val reflections = Reflections(ConfigurationBuilder().setScanners(ResourcesScanner()).setUrls(ClasspathHelper.forPackage("com.itiviti.parser")))
             reflections.getResources(Pattern.compile(".*\\.cs(proj)?")).forEach {
-                Files.copy(javaClass.classLoader.getResourceAsStream(it)!!, tempDir.resolve(File(it).name), StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(DotnetPlugin::class.java.classLoader.getResourceAsStream(it)!!, tempDir.resolve(File(it).name), StandardCopyOption.REPLACE_EXISTING)
             }
 
             val args = buildExtension.getProperties().toMutableMap()
