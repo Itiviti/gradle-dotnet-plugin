@@ -74,23 +74,29 @@ class DotnetSonarPlugin: Plugin<Project> {
             sonarTask.configure {
                 it.dependsOn(task)
             }
-            task.doFirst {
-                // sonarqube is in task graph and executed
-                val graph = project.gradle.taskGraph
-                if (graph.hasTask("${project.path}:${SonarQubeExtension.SONARQUBE_TASK_NAME}") || graph.hasTask(":${SonarQubeExtension.SONARQUBE_TASK_NAME}")) {
-                    project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was detected. Begin sonarscanner")
 
-                    val extension = project.extensions.getByType(DotnetPluginExtension::class.java)
-                    setupReportPath(sonarQubeExtension, extension)
-                    project.exec { exec ->
-                        exec.commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
-                        exec.args("begin")
-                        val sonarQubeProperties = computeSonarProperties(project)
-                        buildArgs(sonarQubeProperties).forEach {
-                            exec.args(it)
-                        }
-                        if (sonarQubeProperties.containsKey(LOGIN_PROPERTY)) {
-                            sonarTask.get().args(buildArg(LOGIN_PROPERTY, sonarQubeProperties[LOGIN_PROPERTY]))
+            task.doFirst {
+                val extension = project.extensions.getByType(DotnetPluginExtension::class.java)
+                val sonarQubeProperties = computeSonarProperties(project)
+                if (sonarQubeProperties.containsKey(LOGIN_PROPERTY)) {
+                    sonarTask.get().args(buildArg(LOGIN_PROPERTY, sonarQubeProperties[LOGIN_PROPERTY]))
+                }
+
+                // sonarqube is in task graph and executed
+                project.gradle.taskGraph.whenReady { graph ->
+                    if (graph.hasTask("${project.path}:${SonarQubeExtension.SONARQUBE_TASK_NAME}") || graph.hasTask(":${SonarQubeExtension.SONARQUBE_TASK_NAME}")) {
+                        project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was detected. Begin sonarscanner")
+
+                        task.doFirst {
+                            setupReportPath(sonarQubeExtension, extension)
+                            project.exec { exec ->
+                                exec.commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
+                                exec.args("begin")
+
+                                buildArgs(sonarQubeProperties).forEach {
+                                    exec.args(it)
+                                }
+                            }
                         }
                     }
                 }

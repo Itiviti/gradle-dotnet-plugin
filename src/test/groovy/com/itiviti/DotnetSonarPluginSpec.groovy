@@ -13,6 +13,7 @@ package com.itiviti
 
 import org.gradle.api.tasks.Exec
 import org.gradle.testfixtures.ProjectBuilder
+import org.sonarqube.gradle.SonarQubeExtension
 import spock.lang.Specification
 
 class DotnetSonarPluginSpec extends Specification {
@@ -52,4 +53,25 @@ class DotnetSonarPluginSpec extends Specification {
         sonarTask.execResult.exitValue > 0
     }
 
+    def 'sonar.login is passed in dotnet-sonarscanner end'() {
+        setup:
+        def project = ProjectBuilder.builder()
+                .build()
+
+        when:
+        project.plugins.apply('com.itiviti.dotnet')
+        project.plugins.apply('com.itiviti.dotnet-sonar')
+
+        ((SonarQubeExtension)project.extensions.getByName(SonarQubeExtension.SONARQUBE_EXTENSION_NAME)).properties {
+            property 'sonar.login', 'foo'
+        }
+
+        and: 'doFirst in dotnetBuild'
+        def dotnetBuild = project.tasks.getByName('dotnetBuild') as Exec
+        dotnetBuild.actions.first().execute(dotnetBuild)
+
+        then:
+        def sonarTask = project.tasks.getByName('sonarqube') as Exec
+        sonarTask.args == [ 'end', '/d:sonar.login=foo' ]
+    }
 }
