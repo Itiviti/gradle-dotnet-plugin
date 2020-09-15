@@ -24,6 +24,7 @@ class DotnetSonarPlugin: Plugin<Project> {
             "n" to "sonar.projectName",
             "v" to "sonar.projectVersion"
         )
+        const val LOGIN_PROPERTY = "sonar.login"
 
         const val NUNIT_REPORT_PATH = "sonar.cs.nunit.reportsPaths"
         const val OPENCOVER_REPORT_PATH = "sonar.cs.opencover.reportsPaths"
@@ -32,6 +33,10 @@ class DotnetSonarPlugin: Plugin<Project> {
             // is automatically set and cannot be overridden on the command line
             "sonar.working.directory"
         )
+
+        private fun buildArg(key: String, value: Any?): String {
+            return "/d:${key}=${value}"
+        }
     }
 
     private val actionBroadcast = ActionBroadcast<SonarQubeProperties>()
@@ -69,18 +74,25 @@ class DotnetSonarPlugin: Plugin<Project> {
             sonarTask.configure {
                 it.dependsOn(task)
             }
+
             task.doFirst {
+                val extension = project.extensions.getByType(DotnetPluginExtension::class.java)
+                val sonarQubeProperties = computeSonarProperties(project)
+                if (sonarQubeProperties.containsKey(LOGIN_PROPERTY)) {
+                    sonarTask.get().args(buildArg(LOGIN_PROPERTY, sonarQubeProperties[LOGIN_PROPERTY]))
+                }
+
                 // sonarqube is in task graph and executed
                 val graph = project.gradle.taskGraph
                 if (graph.hasTask("${project.path}:${SonarQubeExtension.SONARQUBE_TASK_NAME}") || graph.hasTask(":${SonarQubeExtension.SONARQUBE_TASK_NAME}")) {
                     project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was detected. Begin sonarscanner")
 
-                    val extension = project.extensions.getByType(DotnetPluginExtension::class.java)
                     setupReportPath(sonarQubeExtension, extension)
                     project.exec { exec ->
                         exec.commandLine(project.buildDir.resolve(DotnetSonarExtension.toolPath).resolve("dotnet-sonarscanner"))
                         exec.args("begin")
-                        buildArgs(computeSonarProperties(project)).forEach {
+
+                        buildArgs(sonarQubeProperties).forEach {
                             exec.args(it)
                         }
                     }
@@ -113,9 +125,7 @@ class DotnetSonarPlugin: Plugin<Project> {
 
         val otherArgs = properties.filter {
             !MANDATORY_ARGS.values.contains(it.key) && !IGNORED_PROPERTIES.contains(it.key) && !it.value?.toString().isNullOrEmpty()
-        }.map {
-            "/d:${it.key}=${it.value}"
-        }
+        }.map { buildArg(it.key, it.value) }
 
         return mandatoryArgs + otherArgs
     }
