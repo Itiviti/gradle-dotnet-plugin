@@ -51,7 +51,6 @@ class DotnetPluginSpec extends Specification {
         pluginExtension.mainProject.outputPaths.size() == 4
         pluginExtension.mainProject.inputFiles.size() == 10
         [ DotnetProject.BuildAction.Content,
-          DotnetProject.BuildAction.ApplicationDefinition,
           DotnetProject.BuildAction.None,
           DotnetProject.BuildAction.EmbeddedResource,
           DotnetProject.BuildAction.Page,
@@ -59,6 +58,7 @@ class DotnetPluginSpec extends Specification {
           DotnetProject.BuildAction.Resource].each {
             assert pluginExtension.mainProject.getSources(it).size() == 1
         }
+        pluginExtension.mainProject.getSources(DotnetProject.BuildAction.ApplicationDefinition).size() == 3
         project.tasks.clean.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetClean' }.size() > 0
         project.tasks.assemble.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetBuild' }.size() > 0
         project.tasks.build.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetTest' }.size() > 0
