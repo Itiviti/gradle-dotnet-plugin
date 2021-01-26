@@ -32,6 +32,9 @@ open class DotnetTestTask: DotnetBaseTask("test") {
             args("/p:CollectCoverage=true")
             args("/p:ExcludeByFile=${escapeQuote}${testExtension.coverletExcludeFiles}${escapeQuote}", "/p:CoverletOutputFormat=${testExtension.coverletOutputFormat}", "/p:CoverletOutput=${escapeQuote}${testExtension.coverletOutput.absolutePath}/${escapeQuote}")
         }
+        if (testExtension.ignoreExitValue) {
+            setIgnoreExitValue(true)
+        }
 
         val testExtensionAware = (testExtension as ExtensionAware)
 
@@ -43,13 +46,21 @@ open class DotnetTestTask: DotnetBaseTask("test") {
         if (nunitExtension.numberOfTestWorkers >= 0) {
             args("NUnit.NumberOfTestWorkers=${nunitExtension.numberOfTestWorkers}")
         }
+
+        if (nunitExtension.where.isNotBlank()) {
+            args("NUnit.Where=${escapeQuote}${nunitExtension.where}${escapeQuote}")
+        }
+
+        if (nunitExtension.stopOnError) {
+            args("NUnit.StopOnError=true")
+        }
     }
 
     @TaskAction
     override fun exec() {
         // Override filter when set
         val testExtension = (getPluginExtension() as ExtensionAware).extensions.getByType(DotnetTestExtension::class.java)
-        if (!filter.isNullOrEmpty()) {
+        if (!filter.isNullOrBlank()) {
             args = (listOf(args!![0], "--filter", filter)) + args!!.drop(1)
         }
         else if (!testExtension.filter.isNullOrBlank()) {

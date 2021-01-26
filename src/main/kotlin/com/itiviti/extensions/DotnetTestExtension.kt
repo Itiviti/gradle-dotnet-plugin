@@ -36,4 +36,9 @@ open class DotnetTestExtension(buildDir: File) {
      * Coverlet exclude files, default to **\*.designer.cs;**\*.xaml.cs;**\*.g.cs
      */
     var coverletExcludeFiles: String = "**/*.designer.cs;**/*.xaml.cs;**/*.g.cs"
+
+    /**
+     * Ignore dotnet test exit code or not, default to false
+     */
+    var ignoreExitValue = false
 }

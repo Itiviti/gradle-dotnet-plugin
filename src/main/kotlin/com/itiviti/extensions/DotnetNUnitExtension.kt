@@ -15,4 +15,14 @@ open class DotnetNUnitExtension(buildDir: File) {
      * Output report xml destination, default to build/reports/nunit
      */
     var testOutputXml: File = buildDir.resolve("reports/nunit")
+
+    /**
+     * Stops on first error
+     */
+    var stopOnError: Boolean = false
+
+    /**
+     * NUnit Filter expression
+     */
+    var where: String = ""
 }
