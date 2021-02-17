@@ -42,13 +42,13 @@ open class DotnetTestTask: DotnetBaseTask("test") {
 
         // nunit
         val nunitExtension = testExtensionAware.extensions.getByType(DotnetNUnitExtension::class.java)
-        args("NUnit.TestOutputXml=${escapeQuote}${nunitExtension.testOutputXml.absolutePath}${escapeQuote}")
+        args("NUnit.TestOutputXml=\"${nunitExtension.testOutputXml.absolutePath}\"")
         if (nunitExtension.numberOfTestWorkers >= 0) {
             args("NUnit.NumberOfTestWorkers=${nunitExtension.numberOfTestWorkers}")
         }
 
         if (nunitExtension.where.isNotBlank()) {
-            args("NUnit.Where=${escapeQuote}${nunitExtension.where}${escapeQuote}")
+            args("NUnit.Where=\"${nunitExtension.where}\"")
         }
 
         if (nunitExtension.stopOnError) {
