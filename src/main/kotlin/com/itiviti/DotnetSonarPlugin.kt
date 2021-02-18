@@ -53,15 +53,16 @@ class DotnetSonarPlugin: Plugin<Project> {
             with(it) {
                 group = DotnetPlugin.TASK_GROUP
                 description = "Install dotnet-sonarscanner as global tools."
-                it.dependsOn(project.tasks.withType(DotnetBuildTask::class.java))
-                it.mustRunAfter(project.tasks.withType(DotnetTestTask::class.java))
             }
         }
         val sonarTask = project.tasks.register(SonarQubeExtension.SONARQUBE_TASK_NAME, DotnetSonarTask::class.java) {
-            it.dependsOn(sonarInstallTask)
             with(it) {
                 group = DotnetPlugin.TASK_GROUP
                 description = "Run sonarqube analysis."
+
+                dependsOn(sonarInstallTask)
+                dependsOn(project.tasks.withType(DotnetBuildTask::class.java))
+                dependsOn(project.tasks.withType(DotnetTestTask::class.java))
             }
         }
 
