@@ -15,25 +15,22 @@ open class DotnetTestTask: DotnetBaseTask("test") {
     }
 
     init {
-        if (project.properties["ignoreFailures"] == "true") {
-            isIgnoreExitValue = true
-        }
-
         // built with DotnetBuildTask
         args("--no-build")
 
+        val testExtension = getNestedExtension(DotnetTestExtension::class.java)
+        if (project.properties["ignoreFailures"] == "true" || testExtension.ignoreExitValue) {
+            isIgnoreExitValue = true
+        }
+
         val escapeQuote = if (System.getProperty("os.name").contains("windows", true)) "\\\"" else "\""
 
-        val testExtension = getNestedExtension(DotnetTestExtension::class.java)
         if (testExtension.settings?.exists() == true) {
             args("--settings", testExtension.settings!!.absolutePath)
         }
         if (testExtension.collectCoverage) {
             args("/p:CollectCoverage=true")
             args("/p:ExcludeByFile=${escapeQuote}${testExtension.coverletExcludeFiles}${escapeQuote}", "/p:CoverletOutputFormat=${testExtension.coverletOutputFormat}", "/p:CoverletOutput=${escapeQuote}${testExtension.coverletOutput.absolutePath}/${escapeQuote}")
-        }
-        if (testExtension.ignoreExitValue) {
-            setIgnoreExitValue(true)
         }
 
         val testExtensionAware = (testExtension as ExtensionAware)
