@@ -19,7 +19,7 @@ Plugin applies the `LifecycleBasePlugin` and `PublishingPlugin` automatically,
 and hooks tasks to standard lifecycle, such as `clean`, `assemble`, `build` and `publish`.
 
 ## Prerequisites
-* .Net Core SDK 5.0
+* .Net Core SDK 3.1 / .Net 5.0
 * Gradle 6.1
 
 ## To Apply
