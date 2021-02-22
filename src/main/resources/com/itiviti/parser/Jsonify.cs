@@ -1,37 +1,38 @@
 ﻿using Microsoft.Build.Evaluation;
-using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace ProjectFileParser
 {
     public static class Jsonify
     {
-        public static JObject ToJson(params Project[] projects)
+        public static string ToJson(params Project[] projects)
         {
-            JObject json = new JObject();
+            var projectProperties = new Dictionary<string, Dictionary<string, object>>();
             foreach (var project in projects)
             {
                 var projectJson = ProjectToJson(project);
-                json[Path.GetFileNameWithoutExtension(project.FullPath)] = projectJson;
+                projectProperties[Path.GetFileNameWithoutExtension(project.FullPath)] = projectJson;
             }
-            return json;
+            return JsonSerializer.Serialize(projectProperties);
         }
 
-        private static JObject ProjectToJson(Project project)
+        private static Dictionary<string, object> ProjectToJson(Project project)
         {
-            JObject jsonProject = new JObject();
+            var result = new Dictionary<string, object>();
             // Project items like resources, sources and references
             foreach (var item in project.ItemsIgnoringCondition)
             {
-                if (jsonProject[item.ItemType] == null)
+                if (!result.ContainsKey(item.ItemType))
                 {
-                    jsonProject[item.ItemType] = new JArray();
+                    result[item.ItemType] = new List<Dictionary<string, string>>();
                 }
-                JArray array = (JArray)jsonProject[item.ItemType];
+                var array = (List<Dictionary<string, string>>)result[item.ItemType];
 
-                var jsonItem = new JObject();
+                var jsonItem = new Dictionary<string, string>();
                 jsonItem["Include"] = item.EvaluatedInclude;
                 foreach (var metaData in item.Metadata)
                 {
@@ -40,7 +41,7 @@ namespace ProjectFileParser
                 array.Add(jsonItem);
             }
             // Project properties
-            JObject jsonProperties = new JObject();
+            var projectProperties = new Dictionary<string, object>();
             foreach (var property in project.AllEvaluatedProperties)
             {
                 var value = project.ExpandString(property.EvaluatedValue);
@@ -51,20 +52,20 @@ namespace ProjectFileParser
                         .Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                         .Where(v => !string.IsNullOrWhiteSpace(v))
                         .Select(v => v.Trim());
-                    JArray jsonValueArray = new JArray();
+                    var valueArray = new List<string>();
                     foreach (var v in values)
                     {
-                        jsonValueArray.Add(v);
+                        valueArray.Add(v);
                     }
-                    jsonProperties[property.Name] = jsonValueArray;
+                    projectProperties[property.Name] = valueArray;
                 }
                 else
                 {
-                    jsonProperties[property.Name] = value.Trim();
+                    projectProperties[property.Name] = value.Trim();
                 }
             }
-            jsonProject["Properties"] = jsonProperties;
-            return jsonProject;
+            result["Properties"] = projectProperties;
+            return result;
         }
     }
 }

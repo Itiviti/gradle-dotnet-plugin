@@ -11,7 +11,8 @@ namespace ProjectFileParser
         {
             try
             {
-                var latestVsVersion = MSBuildLocator.QueryVisualStudioInstances().OrderBy(vsInstance => vsInstance.Version).Last();
+                var versions = MSBuildLocator.QueryVisualStudioInstances().OrderBy(vsInstance => vsInstance.Version);
+                var latestVsVersion = versions.Last();
                 MSBuildLocator.RegisterInstance(latestVsVersion);
                 Console.Error.WriteLine($"Registered latest VS Instance: {latestVsVersion.Name} - {latestVsVersion.Version} - {latestVsVersion.MSBuildPath} - {latestVsVersion.DiscoveryType} - {latestVsVersion.VisualStudioRootPath}");
             }
@@ -19,17 +20,7 @@ namespace ProjectFileParser
             {
                 Console.Error.WriteLine("MSBuildLocator cannot detect VS location, falling back to GAC registered MSBuild dlls");
                 Console.Error.WriteLine("Error was: {0}", ex);
-
-                RegisterFallback();
             }
-        }
-
-        private static void RegisterFallback()
-        {
-            AppDomain.CurrentDomain.AssemblyResolve += (object sender, ResolveEventArgs args) =>
-            {
-                return Assembly.LoadFrom("privateDlls");
-            };
         }
     }
 }

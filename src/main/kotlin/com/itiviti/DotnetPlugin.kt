@@ -58,6 +58,24 @@ class DotnetPlugin: Plugin<Project> {
                 throw GradleException("Cannot find a valid project file, please setup workingDir / solution correctly")
             }
 
+            // Detect dotnet version
+            var outputStream = ByteArrayOutputStream()
+            project.exec { exec ->
+                exec.commandLine(extension.dotnetExecutable)
+                exec.args("--version")
+                exec.standardOutput = outputStream
+            }
+            val versionString = outputStream.toString()
+            val targetFramework = if (versionString.startsWith("3.1")) {
+                "netcoreapp3.1"
+            } else {
+                if (!versionString.startsWith("5.0")) {
+                    project.logger.info("Default to use target framework to .Net Sdk 5.0, please make sure it is installed")
+                }
+                "net5.0"
+            }
+            project.logger.info("Use $targetFramework for project parser")
+
             val tempDir = Files.createDirectories(File(project.buildDir, "tmp/dotnet").toPath())
 
             project.logger.info("  Extracting parser to {}", tempDir)
@@ -79,16 +97,19 @@ class DotnetPlugin: Plugin<Project> {
                 args["PackageVersion"] = buildExtension.packageVersion
             }
 
-            val outputStream = ByteArrayOutputStream()
+            outputStream = ByteArrayOutputStream()
+            val errorOutputStream = ByteArrayOutputStream()
             val parser = project.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.workingDir(tempDir.toFile())
-                exec.args("run", "--", targetFile, Gson().toJson(args).replace('"', '\''))
+                exec.args("run", "-f", targetFramework, "--", targetFile, Gson().toJson(args).replace('"', '\''))
                 exec.standardOutput = outputStream
+                exec.errorOutput = errorOutputStream
+                exec.isIgnoreExitValue = true
             }
 
             if (parser.exitValue != 0) {
-                throw GradleException("Failed to parse project.")
+                throw GradleException("Failed to parse project, output: ${outputStream}, error: ${errorOutputStream}")
             }
 
             val processOutput = outputStream.toString()

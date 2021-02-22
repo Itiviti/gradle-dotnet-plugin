@@ -16,7 +16,7 @@ open class DotnetBuildExtension(projectVersion: String) : GroovyObjectSupport() 
     }
 
     operator fun set(property: String, value: Any?) {
-        storage[property] = value;
+        storage[property] = value
     }
 
     fun getProperties(): Map<String, String> {
