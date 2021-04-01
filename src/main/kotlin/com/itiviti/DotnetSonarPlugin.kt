@@ -61,10 +61,11 @@ class DotnetSonarPlugin: Plugin<Project> {
                 description = "Run sonarqube analysis."
 
                 dependsOn(sonarInstallTask)
-                dependsOn(project.tasks.withType(DotnetBuildTask::class.java))
-                dependsOn(project.tasks.withType(DotnetTestTask::class.java))
             }
+
         }
+        project.tasks.withType(DotnetBuildTask::class.java).configureEach { task -> task.finalizedBy(sonarTask) }
+        project.tasks.withType(DotnetTestTask::class.java).configureEach { task -> task.finalizedBy(sonarTask) }
 
         project.tasks.withType(DotnetBuildTask::class.java).configureEach { task ->
             task.mustRunAfter(sonarInstallTask)
