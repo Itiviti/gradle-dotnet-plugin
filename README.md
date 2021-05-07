@@ -15,8 +15,9 @@ It also supports project file parsing, and some basic up-to-date checks to skip 
 You can access the properties via `project.dotnet.allProjects` and `project.dotnet.mainProject`.
 dotnet restore will be done at project evaluation phase to make sure all project properties can be retrieved.
 
-Plugin applies the `LifecycleBasePlugin` and `PublishingPlugin` automatically,
-and hooks tasks to standard lifecycle, such as `clean`, `assemble`, `build` and `publish`.
+Plugin applies the `LifecycleBasePlugin` automatically,
+and hooks tasks to standard lifecycle, such as `clean`, `assemble` and `build`.
+if `publising` plugin is applied, `dotnetNugetPush` task will hook on `publish` 
 
 ## Prerequisites
 * .Net Core SDK 3.1 / .Net 5.0

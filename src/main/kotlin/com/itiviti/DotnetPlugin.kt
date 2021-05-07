@@ -147,7 +147,6 @@ class DotnetPlugin: Plugin<Project> {
 
     override fun apply(project: Project) {
         project.plugins.apply(LifecycleBasePlugin::class.java)
-        project.plugins.apply(PublishingPlugin::class.java)
 
         val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name, project.projectDir, { evaluateProject(project) })
         val extensionAware = extension as ExtensionAware
@@ -215,8 +214,11 @@ class DotnetPlugin: Plugin<Project> {
                 mustRunAfter(dotnetBuild)
             }
         }
-        project.tasks.named(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME).configure {
-            it.dependsOn(dotnetNugetPush)
+
+        project.plugins.withType(PublishingPlugin::class.java) {
+            project.tasks.named(PublishingPlugin.PUBLISH_LIFECYCLE_TASK_NAME).configure {
+                it.dependsOn(dotnetNugetPush)
+            }
         }
     }
 }
