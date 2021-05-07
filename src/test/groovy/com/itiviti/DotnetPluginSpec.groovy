@@ -28,11 +28,14 @@ import spock.lang.Unroll
 class DotnetPluginSpec extends Specification {
 
     @Unroll
-    def "Project is restored and parsed correctly with beforeBuild = #beforeBuild"() {
+    def "Project is restored and parsed correctly with beforeBuild = #beforeBuild with publishing = #publishing"() {
         setup:
         def project = ProjectBuilder.builder()
                 .build()
         project.plugins.apply('com.itiviti.dotnet')
+        if (publishing) {
+            project.plugins.apply('publishing')
+        }
 
         def pluginExtension = project.extensions.getByType(DotnetPluginExtension)
         pluginExtension.projectName = 'core'
@@ -62,10 +65,15 @@ class DotnetPluginSpec extends Specification {
         project.tasks.clean.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetClean' }.size() > 0
         project.tasks.assemble.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetBuild' }.size() > 0
         project.tasks.build.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetTest' }.size() > 0
-        project.tasks.publish.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetNugetPush' }.size() > 0
+        if (publishing) {
+            project.tasks.publish.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetNugetPush' }.size() > 0
+        }
 
         where:
-        beforeBuild << [ true, false ]
+        [beforeBuild, publishing] << [
+                [ true, false ],
+                [ true, false ]
+        ].combinations()
     }
 
     def "Project evaluation fails when preReleaseCheck is set"() {
