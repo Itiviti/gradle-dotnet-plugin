@@ -28,6 +28,7 @@ class DotnetSonarPluginSpec extends Specification {
 
         then:
         project.tasks.getByName('sonarqube') != null
+        project.tasks.getByName('dotnetSonar') != null
         project.tasks.getByName('dotnetInstallSonar') != null
     }
 
@@ -44,7 +45,7 @@ class DotnetSonarPluginSpec extends Specification {
         (project.tasks.getByName('dotnetInstallSonar') as Exec).exec()
 
         and:
-        def sonarTask = project.tasks.getByName('sonarqube') as Exec
+        def sonarTask = project.tasks.getByName('dotnetSonar') as Exec
         sonarTask.ignoreExitValue = true
         sonarTask.exec()
 
@@ -71,10 +72,7 @@ class DotnetSonarPluginSpec extends Specification {
         dotnetBuild.actions.first().execute(dotnetBuild)
 
         then:
-        // Task graph is not ready within unit test
-        thrown(IllegalStateException)
-
-        def sonarTask = project.tasks.getByName('sonarqube') as Exec
+        def sonarTask = project.tasks.getByName('dotnetSonar') as Exec
         sonarTask.args == [ 'end', '/d:sonar.login=foo' ]
     }
 }
