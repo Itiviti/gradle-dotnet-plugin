@@ -55,32 +55,47 @@ class DotnetSonarPlugin: Plugin<Project> {
                 description = "Install dotnet-sonarscanner as global tools."
             }
         }
-        val sonarTask = project.tasks.register(SonarQubeExtension.SONARQUBE_TASK_NAME, DotnetSonarTask::class.java) {
+
+        val sonarTask = project.tasks.register(SonarQubeExtension.SONARQUBE_TASK_NAME) {
+            it.dependsOn(sonarInstallTask)
+            it.doLast {
+                project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was invoked, enable dotnetSonar")
+                project.tasks.withType(DotnetSonarTask::class.java).configureEach { sonarDotnetTask ->
+                    sonarDotnetTask.enabled = true
+                }
+            }
+        }
+        val sonarDotnetTask = project.tasks.register("dotnetSonar", DotnetSonarTask::class.java) {
             with(it) {
                 group = DotnetPlugin.TASK_GROUP
                 description = "Run sonarqube analysis."
+                enabled = false
 
-                dependsOn(sonarInstallTask)
+                mustRunAfter(sonarInstallTask)
+                mustRunAfter(sonarTask)
+
+                doLast {
+                    // Clean .sonarqube
+                    project.delete(project.projectDir.resolve(".sonarqube"))
+                }
             }
-
         }
-        project.tasks.withType(DotnetBuildTask::class.java).configureEach { task -> task.finalizedBy(sonarTask) }
-        project.tasks.withType(DotnetTestTask::class.java).configureEach { task -> task.finalizedBy(sonarTask) }
+
+        project.tasks.withType(DotnetBuildTask::class.java).configureEach { task -> task.finalizedBy(sonarDotnetTask) }
+        project.tasks.withType(DotnetTestTask::class.java).configureEach { task -> task.finalizedBy(sonarDotnetTask) }
 
         project.tasks.withType(DotnetBuildTask::class.java).configureEach { task ->
-            task.mustRunAfter(sonarInstallTask)
+            task.mustRunAfter(sonarTask)
 
             task.doFirst {
                 val extension = project.extensions.getByType(DotnetPluginExtension::class.java)
                 val sonarQubeProperties = computeSonarProperties(project)
                 if (sonarQubeProperties.containsKey(LOGIN_PROPERTY)) {
-                    sonarTask.get().args(buildArg(LOGIN_PROPERTY, sonarQubeProperties[LOGIN_PROPERTY]))
+                    sonarDotnetTask.get().args(buildArg(LOGIN_PROPERTY, sonarQubeProperties[LOGIN_PROPERTY]))
                 }
 
                 // sonarqube is in task graph and executed
-                val graph = project.gradle.taskGraph
-                if (graph.hasTask("${project.path}:${SonarQubeExtension.SONARQUBE_TASK_NAME}") || graph.hasTask(":${SonarQubeExtension.SONARQUBE_TASK_NAME}")) {
-                    project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was detected. Begin sonarscanner")
+                if (sonarDotnetTask.get().enabled) {
 
                     setupReportPath(sonarQubeExtension, extension)
                     project.exec { exec ->

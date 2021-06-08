@@ -36,6 +36,8 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
         sources.finalizeValueOnRead()
         destinations.finalizeValueOnRead()
 
+        args("/nodereuse:false")
+
         val restoreExtension = getNestedExtension(DotnetRestoreExtension::class.java)
         // Require to restore during build
         if (restoreExtension.beforeBuild) {
