@@ -12,7 +12,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.plugins.PublishingPlugin
-import org.gradle.api.tasks.Delete
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
@@ -66,14 +65,21 @@ class DotnetPlugin: Plugin<Project> {
                 exec.standardOutput = outputStream
             }
             val versionString = outputStream.toString()
-            val targetFramework = if (versionString.startsWith("3.1")) {
-                "netcoreapp3.1"
-            } else {
-                if (!versionString.startsWith("5.0")) {
-                    project.logger.info("Default to use target framework to .Net Sdk 5.0, please make sure it is installed")
+
+            val targetFramework = when {
+                versionString.startsWith("3.1") -> "netcoreapp3.1"
+                versionString.startsWith("5.0") -> "net5.0"
+                versionString.startsWith("6.0") -> {
+                    project.logger.info(".NET6 is still in preview, use at your own risk!")
+                    "net6.0"
                 }
-                "net5.0"
+                else -> throw GradleException("""
+                    Cannot determine target for framework version '${versionString}'.
+                    Please make sure that you have a compatible SDK installed on your machine.
+                    If not, you can download the recommended SDK here: https://dotnet.microsoft.com/download/dotnet
+                """.trimIndent())
             }
+
             project.logger.info("Use $targetFramework for project parser")
 
             val tempDir = Files.createDirectories(File(project.buildDir, "tmp/dotnet").toPath())
