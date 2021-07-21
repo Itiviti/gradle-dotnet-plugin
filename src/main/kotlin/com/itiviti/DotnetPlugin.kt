@@ -12,7 +12,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.plugins.PublishingPlugin
-import org.gradle.api.tasks.Delete
 import org.gradle.language.base.plugins.LifecycleBasePlugin
 import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
@@ -66,14 +65,13 @@ class DotnetPlugin: Plugin<Project> {
                 exec.standardOutput = outputStream
             }
             val versionString = outputStream.toString()
-            val targetFramework = if (versionString.startsWith("3.1")) {
-                "netcoreapp3.1"
-            } else {
-                if (!versionString.startsWith("5.0")) {
-                    project.logger.info("Default to use target framework to .Net Sdk 5.0, please make sure it is installed")
-                }
-                "net5.0"
+
+            val targetFramework = when {
+                versionString.startsWith("3.1") -> "netcoreapp3.1"
+                versionString.startsWith("6.0") -> "net6.0"
+                else -> "net5.0"
             }
+
             project.logger.info("Use $targetFramework for project parser")
 
             val tempDir = Files.createDirectories(File(project.buildDir, "tmp/dotnet").toPath())
