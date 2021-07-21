@@ -68,8 +68,16 @@ class DotnetPlugin: Plugin<Project> {
 
             val targetFramework = when {
                 versionString.startsWith("3.1") -> "netcoreapp3.1"
-                versionString.startsWith("6.0") -> "net6.0"
-                else -> "net5.0"
+                versionString.startsWith("5.0") -> "net5.0"
+                versionString.startsWith("6.0") -> {
+                    project.logger.info(".NET6 is still in preview, use at your own risk!")
+                    "net6.0"
+                }
+                else -> throw GradleException("""
+                    Cannot determine target for framework version '${versionString}'.
+                    Please make sure that you have a compatible SDK installed on your machine.
+                    If not, you can download the recommended SDK here: https://dotnet.microsoft.com/download/dotnet/5.0
+                """.trimIndent())
             }
 
             project.logger.info("Use $targetFramework for project parser")
