@@ -76,7 +76,7 @@ class DotnetPlugin: Plugin<Project> {
                 else -> throw GradleException("""
                     Cannot determine target for framework version '${versionString}'.
                     Please make sure that you have a compatible SDK installed on your machine.
-                    If not, you can download the recommended SDK here: https://dotnet.microsoft.com/download/dotnet/5.0
+                    If not, you can download the recommended SDK here: https://dotnet.microsoft.com/download/dotnet
                 """.trimIndent())
             }
 
