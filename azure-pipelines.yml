@@ -23,7 +23,7 @@ steps:
   inputs:
     packageType: sdk
     version: 6.0.0-preview.6
-    installationPath: $(Agent.ToolsDirectory)/dotnet
+    includePreviewVersions: true
 
 - task: Gradle@2
   inputs:
