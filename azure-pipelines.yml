@@ -18,6 +18,14 @@ pool:
   vmImage: $(imageName)
 
 steps:
+- task: UseDotNet@2
+  displayName: 'Use .NET Core sdk'
+  inputs:
+    packageType: sdk
+    version: 6.0.0-preview.6
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+
+steps:
 - task: Gradle@2
   inputs:
     workingDirectory: ''
@@ -28,6 +36,5 @@ steps:
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
     testResultsFiles: '**/TEST-*.xml'
-    # https://github.com/microsoft/azure-pipelines-tasks/issues/12593
-    # codeCoverageToolOption: JaCoCo
+    codeCoverageToolOption: JaCoCo
     tasks: 'build'
