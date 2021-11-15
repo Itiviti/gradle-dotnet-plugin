@@ -11,7 +11,7 @@ import java.io.File
 open class DotnetBuildTask: DotnetBaseTask("build") {
 
     companion object {
-        fun restoreArgs(restoreExtension: DotnetRestoreExtension, exec: ExecSpec) {
+        fun restoreArgs(restoreExtension: DotnetRestoreExtension, buildExtension: DotnetBuildExtension, exec: ExecSpec) {
             if (restoreExtension.force) {
                 exec.args("--force")
             }
@@ -20,6 +20,14 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
             }
             restoreExtension.source.forEach {
                 exec.args("--source", it)
+            }
+
+            addCustomBuildProperties(buildExtension, exec)
+        }
+
+        fun addCustomBuildProperties(buildExtension: DotnetBuildExtension, exec: ExecSpec) {
+            buildExtension.getProperties().forEach {
+                exec.args("-p:${it.key}=${it.value}")
             }
         }
     }
@@ -39,14 +47,15 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
         args("/nodereuse:false")
 
         val restoreExtension = getNestedExtension(DotnetRestoreExtension::class.java)
+        val buildExtension = getNestedExtension(DotnetBuildExtension::class.java)
+
         // Require to restore during build
         if (restoreExtension.beforeBuild) {
-            restoreArgs(restoreExtension, this)
+            restoreArgs(restoreExtension, buildExtension, this)
         } else {
             args("--no-restore")
         }
 
-        val buildExtension = getNestedExtension(DotnetBuildExtension::class.java)
         if (buildExtension.version.isNotEmpty()) {
             args("-p:Version=${buildExtension.version}")
         }
@@ -54,8 +63,6 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
             args("-p:PackageVersion=${buildExtension.packageVersion}")
         }
 
-        buildExtension.getProperties().forEach {
-            args("-p:${it.key}=${it.value}")
-        }
+        addCustomBuildProperties(buildExtension, this)
     }
 }
