@@ -65,6 +65,7 @@ class DotnetPlugin: Plugin<Project> {
                 exec.standardOutput = outputStream
             }
             val versionString = outputStream.toString()
+            val majorVersion = versionString.substringBefore(".").toInt()
 
             val targetFramework = when {
                 versionString.startsWith("3.1") -> "netcoreapp3.1"
@@ -105,7 +106,11 @@ class DotnetPlugin: Plugin<Project> {
             val parser = project.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.workingDir(tempDir.toFile())
-                exec.args("run", "--property:FrameworkVersion=${targetFramework}", "-f", targetFramework, "--", targetFile, Gson().toJson(args).replace('"', '\''))
+                exec.args("run")
+                if (majorVersion >= 6) {
+                    exec.args("--property:FrameworkVersion=${targetFramework}")
+                }
+                exec.args("-f", targetFramework, "--", targetFile, Gson().toJson(args).replace('"', '\''))
                 exec.standardOutput = outputStream
                 exec.errorOutput = errorOutputStream
                 exec.isIgnoreExitValue = true

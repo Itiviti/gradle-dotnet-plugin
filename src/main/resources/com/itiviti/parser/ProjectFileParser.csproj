@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>$(FrameworkVersion)</TargetFramework>
+    <TargetFramework Condition="'$(FrameworkVersion)'!=''">$(FrameworkVersion)</TargetFramework>
+    <TargetFrameworks Condition="'$(FrameworkVersion)'==''">netcoreapp3.1;net5.0</TargetFrameworks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
