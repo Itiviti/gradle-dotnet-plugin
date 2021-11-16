@@ -27,7 +27,7 @@ class DotnetPlugin: Plugin<Project> {
     companion object {
         const val TASK_GROUP = "dotnet"
 
-        private fun restore(project: Project, extension: DotnetPluginExtension, restoreExtension: DotnetRestoreExtension): Int {
+        private fun restore(project: Project, extension: DotnetPluginExtension, restoreExtension: DotnetRestoreExtension, buildExtension: DotnetBuildExtension): Int {
             return project.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.workingDir(extension.workingDir)
@@ -36,7 +36,7 @@ class DotnetPlugin: Plugin<Project> {
                     exec.args(extension.solution!!)
                 }
                 exec.args("--verbosity", extension.verbosity)
-                DotnetBuildTask.restoreArgs(restoreExtension, exec)
+                DotnetBuildTask.restoreArgs(restoreExtension, buildExtension, exec)
             }.exitValue
         }
 
@@ -69,12 +69,9 @@ class DotnetPlugin: Plugin<Project> {
             val targetFramework = when {
                 versionString.startsWith("3.1") -> "netcoreapp3.1"
                 versionString.startsWith("5.0") -> "net5.0"
-                versionString.startsWith("6.0") -> {
-                    project.logger.info(".NET6 is still in preview, use at your own risk!")
-                    "net6.0"
-                }
+                versionString.startsWith("6.0") -> "net6.0"
                 else -> throw GradleException("""
-                    Cannot determine target for framework version '${versionString}'.
+                    Unsupported target for framework version '${versionString}'.
                     Please make sure that you have a compatible SDK installed on your machine.
                     If not, you can download the recommended SDK here: https://dotnet.microsoft.com/download/dotnet
                 """.trimIndent())
@@ -108,7 +105,7 @@ class DotnetPlugin: Plugin<Project> {
             val parser = project.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.workingDir(tempDir.toFile())
-                exec.args("run", "-f", targetFramework, "--", targetFile, Gson().toJson(args).replace('"', '\''))
+                exec.args("run", "--property:FrameworkVersion=${targetFramework}", "-f", targetFramework, "--", targetFile, Gson().toJson(args).replace('"', '\''))
                 exec.standardOutput = outputStream
                 exec.errorOutput = errorOutputStream
                 exec.isIgnoreExitValue = true
@@ -132,7 +129,7 @@ class DotnetPlugin: Plugin<Project> {
             if (!restoreExtension.beforeBuild) {
                 project.logger.lifecycle("Start restoring packages")
 
-                if (restore(project, extension, restoreExtension) != 0) {
+                if (restore(project, extension, restoreExtension, buildExtension) != 0) {
                     throw GradleException("dotnet restore fails")
                 }
 
