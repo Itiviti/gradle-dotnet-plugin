@@ -21,14 +21,7 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
             restoreExtension.source.forEach {
                 exec.args("--source", it)
             }
-
-            addCustomBuildProperties(buildExtension, exec)
-        }
-
-        fun addCustomBuildProperties(buildExtension: DotnetBuildExtension, exec: ExecSpec) {
-            buildExtension.getProperties().forEach {
-                exec.args("-p:${it.key}=${it.value}")
-            }
+            buildExtension.addCustomBuildProperties(exec)
         }
     }
 
@@ -63,6 +56,6 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
             args("-p:PackageVersion=${buildExtension.packageVersion}")
         }
 
-        addCustomBuildProperties(buildExtension, this)
+        buildExtension.addCustomBuildProperties(this)
     }
 }

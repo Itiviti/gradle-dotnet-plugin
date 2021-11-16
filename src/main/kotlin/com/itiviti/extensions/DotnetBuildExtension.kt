@@ -4,6 +4,7 @@ import groovy.lang.GroovyObjectSupport
 import groovy.lang.MissingPropertyException
 import groovy.lang.ReadOnlyPropertyException
 import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.process.ExecSpec
 
 open class DotnetBuildExtension(projectVersion: String) : GroovyObjectSupport() {
     private val storage = mutableMapOf<String, Any?>()
@@ -51,5 +52,11 @@ open class DotnetBuildExtension(projectVersion: String) : GroovyObjectSupport() 
 
     open fun propertyMissing(name: String, value: Any?) {
         this[name] = value
+    }
+
+    fun addCustomBuildProperties(exec: ExecSpec) {
+        getProperties().forEach {
+            exec.args("-p:${it.key}=${it.value}")
+        }
     }
 }
