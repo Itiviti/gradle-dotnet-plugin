@@ -20,6 +20,7 @@ import org.reflections.util.ConfigurationBuilder
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.regex.Pattern
 
@@ -58,13 +59,21 @@ class DotnetPlugin: Plugin<Project> {
             }
 
             // Detect dotnet version
-            var outputStream = ByteArrayOutputStream()
-            project.exec { exec ->
-                exec.commandLine(extension.dotnetExecutable)
-                exec.args("--version")
-                exec.standardOutput = outputStream
+            val msbuildSdksPath = System.getenv("MSBuildSDKsPath")
+            val versionString = if (!msbuildSdksPath.isNullOrEmpty()) {
+                val regex = Regex("\"version\"\\s*:\\s*\"(\\S+)\"")
+                Files.readAllLines(Paths.get(msbuildSdksPath))
+                    .mapNotNull { regex.find(it)?.groupValues?.get(1) }
+                    .first()
+            } else {
+                val outputStream = ByteArrayOutputStream()
+                project.exec { exec ->
+                    exec.commandLine(extension.dotnetExecutable)
+                    exec.args("--version")
+                    exec.standardOutput = outputStream
+                }
+                outputStream.toString()
             }
-            val versionString = outputStream.toString()
             val majorVersion = versionString.substringBefore(".").toInt()
 
             val targetFramework = when {
@@ -101,7 +110,7 @@ class DotnetPlugin: Plugin<Project> {
                 args["PackageVersion"] = buildExtension.packageVersion
             }
 
-            outputStream = ByteArrayOutputStream()
+            val outputStream = ByteArrayOutputStream()
             val errorOutputStream = ByteArrayOutputStream()
             val parser = project.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
