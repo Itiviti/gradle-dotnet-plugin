@@ -62,7 +62,7 @@ class DotnetPlugin: Plugin<Project> {
             val msbuildSdksPath = System.getenv("MSBuildSDKsPath")
             val versionString = if (!msbuildSdksPath.isNullOrEmpty()) {
                 val regex = Regex("\"version\"\\s*:\\s*\"(\\S+)\"")
-                Files.readAllLines(Paths.get(msbuildSdksPath))
+                Files.readAllLines(Paths.get(msbuildSdksPath, "dotnet.runtimeconfig.json"))
                     .mapNotNull { regex.find(it)?.groupValues?.get(1) }
                     .first()
             } else {
