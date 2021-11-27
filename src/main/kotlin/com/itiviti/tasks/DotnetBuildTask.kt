@@ -39,6 +39,7 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
 
         args("/nodereuse:false")
 
+        val pluginExtension = getPluginExtension()
         val restoreExtension = getNestedExtension(DotnetRestoreExtension::class.java)
         val buildExtension = getNestedExtension(DotnetBuildExtension::class.java)
 
@@ -54,6 +55,10 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
         }
         if (buildExtension.packageVersion.isNotEmpty()) {
             args("-p:PackageVersion=${buildExtension.packageVersion}")
+        }
+
+        if (pluginExtension.msbuildSDKsPath != null) {
+            environment("MSBuildSDKsPath", pluginExtension.msbuildSDKsPath)
         }
 
         buildExtension.addCustomBuildProperties(this)

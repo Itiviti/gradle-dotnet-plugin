@@ -41,6 +41,54 @@ class DotnetPlugin: Plugin<Project> {
             }.exitValue
         }
 
+        private fun getMajorVersion(version: String) = version.substringBeforeLast('.').toDouble()
+
+        fun listSdks(project: Project, extension: DotnetPluginExtension): String {
+            val listSdksOutputStream = ByteArrayOutputStream()
+            project.exec { exec ->
+                exec.commandLine(extension.dotnetExecutable)
+                exec.args("--list-sdks")
+                exec.standardOutput = listSdksOutputStream
+            }
+            return listSdksOutputStream.toString()
+        }
+
+        @JvmStatic
+        fun getDotnetVersion(project: Project, extension: DotnetPluginExtension): String {
+            val outputStream = ByteArrayOutputStream()
+            project.exec { exec ->
+                exec.commandLine(extension.dotnetExecutable)
+                exec.args("--version")
+                exec.standardOutput = outputStream
+            }
+            return outputStream.toString().trim()
+        }
+
+        @JvmStatic
+        private fun fixEnv(project: Project, msbuildSdksPath: String, extension: DotnetPluginExtension, currentVersion: String) {
+            val regex = Regex("\"version\"\\s*:\\s*\"(\\S+)\"")
+            val sdkRuntimeMajorVersion = try {
+                Files.readAllLines(Paths.get(msbuildSdksPath, "..", "dotnet.runtimeconfig.json"))
+                    .mapNotNull { regex.find(it)?.groupValues?.get(1) }
+                    .map { getMajorVersion(it) }
+                    .first()
+            } catch (e: Exception) {
+                ""
+            }
+
+            if (getMajorVersion(currentVersion) != sdkRuntimeMajorVersion) {
+                project.logger.warn("MSBuildSDKsPath does not match the executing SDK, attempt to search for the right SDK")
+                val sdksString = listSdks(project, extension)
+                val basePath = sdksString.lines()
+                        .map { it.trim() }
+                        .first { it.startsWith(currentVersion) }
+                        .substringAfter('[')
+                        .substringBefore(']')
+                val actualSdkPath = Paths.get(basePath, currentVersion, "Sdks")
+                extension.msbuildSDKsPath = actualSdkPath.toString()
+            }
+        }
+
         @Suppress("UNCHECKED_CAST")
         private fun parseProjects(project: Project, extension: DotnetPluginExtension, buildExtension: DotnetBuildExtension): Map<String, DotnetProject> {
             var targetFile: File?
@@ -59,22 +107,15 @@ class DotnetPlugin: Plugin<Project> {
             }
 
             // Detect dotnet version
-            val msbuildSdksPath = System.getenv("MSBuildSDKsPath")
-            val versionString = if (!msbuildSdksPath.isNullOrEmpty()) {
-                val regex = Regex("\"version\"\\s*:\\s*\"(\\S+)\"")
-                Files.readAllLines(Paths.get(msbuildSdksPath, "../dotnet.runtimeconfig.json"))
-                    .mapNotNull { regex.find(it)?.groupValues?.get(1) }
-                    .first()
-            } else {
-                val outputStream = ByteArrayOutputStream()
-                project.exec { exec ->
-                    exec.commandLine(extension.dotnetExecutable)
-                    exec.args("--version")
-                    exec.standardOutput = outputStream
+            val versionString = getDotnetVersion(project, extension)
+            val majorVersion = getMajorVersion(versionString)
+
+            if (extension.msbuildSDKsPath == null) {
+                val msbuildSdksPath = System.getenv("MSBuildSDKsPath")
+                if (!msbuildSdksPath.isNullOrEmpty()) {
+                    fixEnv(project, msbuildSdksPath, extension, versionString)
                 }
-                outputStream.toString()
             }
-            val majorVersion = versionString.substringBefore(".").toInt()
 
             val targetFramework = when {
                 versionString.startsWith("3.1") -> "netcoreapp3.1"
@@ -110,7 +151,7 @@ class DotnetPlugin: Plugin<Project> {
                 args["PackageVersion"] = buildExtension.packageVersion
             }
 
-            val outputStream = ByteArrayOutputStream()
+            val parseOutputStream = ByteArrayOutputStream()
             val errorOutputStream = ByteArrayOutputStream()
             val parser = project.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
@@ -119,17 +160,20 @@ class DotnetPlugin: Plugin<Project> {
                 if (majorVersion >= 6) {
                     exec.args("--property:FrameworkVersion=${targetFramework}")
                 }
+                if (extension.msbuildSDKsPath != null) {
+                    exec.environment("MSBuildSDKsPath", extension.msbuildSDKsPath)
+                }
                 exec.args("-f", targetFramework, "--", targetFile, Gson().toJson(args).replace('"', '\''))
-                exec.standardOutput = outputStream
+                exec.standardOutput = parseOutputStream
                 exec.errorOutput = errorOutputStream
                 exec.isIgnoreExitValue = true
             }
 
             if (parser.exitValue != 0) {
-                throw GradleException("Failed to parse project, output: ${outputStream}, error: ${errorOutputStream}")
+                throw GradleException("Failed to parse project, output: ${parseOutputStream}, error: ${errorOutputStream}")
             }
 
-            val processOutput = outputStream.toString()
+            val processOutput = parseOutputStream.toString()
             val result = JsonSlurper().parseText(processOutput.substring(processOutput.indexOf('{'))) as MutableMap<String, Any>
 
             return result.map { entry -> entry.key to DotnetProject(entry.value as Map<String, Any>) }.toMap()

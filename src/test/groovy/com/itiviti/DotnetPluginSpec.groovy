@@ -25,6 +25,8 @@ import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.nio.file.Paths
+
 class DotnetPluginSpec extends Specification {
 
     @Unroll
@@ -119,5 +121,35 @@ class DotnetPluginSpec extends Specification {
 
         then:
         buildTask.state.failure == null
+    }
+
+    def "MSBuildSDKsPath version mismatch is fixed automatically"() {
+        setup:
+        def project = ProjectBuilder.builder()
+                .build()
+        project.version = '9.14.0'
+        project.plugins.apply('com.itiviti.dotnet')
+        def extension = project.extensions.getByType(DotnetPluginExtension)
+        def envPaths = envVersion.replace(']', '').split(' \\[').reverse()
+        def path = Paths.get(envPaths[0], envPaths[1], 'Sdks').toString()
+        def currentVersion = DotnetPlugin.getDotnetVersion(project, extension)
+
+        when:
+        DotnetPlugin.fixEnv(project, path, extension, currentVersion)
+
+        then:
+        if (envVersion.startsWith(envVersion)) {
+            extension.msbuildSDKsPath == null
+        } else {
+            extension.msbuildSDKsPath.contains(currentVersion)
+        }
+
+        where:
+        envVersion << listSdks().readLines()
+    }
+
+    static def listSdks() {
+        Process command = new ProcessBuilder("dotnet", "--list-sdks").start()
+        return command.text
     }
 }

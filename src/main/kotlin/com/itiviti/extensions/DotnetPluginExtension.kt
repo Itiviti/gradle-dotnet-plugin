@@ -52,6 +52,11 @@ open class DotnetPluginExtension(var projectName: String, projectDir: File, proj
      */
     var preReleaseCheck = false
 
+    /**
+     * environment variable MSBuildSDKsPath passed when executing dotnet build for selecting SDKs
+     */
+    var msbuildSDKsPath: String? = null
+
     val allProjects: Map<String, DotnetProject> by lazy { projectEvaluate() }
 
     fun getMainProject(): DotnetProject {
