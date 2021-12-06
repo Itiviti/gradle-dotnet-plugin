@@ -2,10 +2,7 @@ package com.itiviti
 
 import com.google.gson.Gson
 import com.itiviti.extensions.*
-import com.itiviti.tasks.DotnetBuildTask
-import com.itiviti.tasks.DotnetCleanTask
-import com.itiviti.tasks.DotnetNugetPushTask
-import com.itiviti.tasks.DotnetTestTask
+import com.itiviti.tasks.*
 import groovy.json.JsonSlurper
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -86,6 +83,10 @@ class DotnetPlugin: Plugin<Project> {
                         .substringBefore(']')
                 val actualSdkPath = Paths.get(basePath, currentVersion, "Sdks")
                 extension.msbuildSDKsPath = actualSdkPath.toString()
+
+                project.tasks.withType(DotnetBaseTask::class.java) {
+                    it.environment("MSBuildSDKsPath", actualSdkPath.toString())
+                }
             }
         }
 
@@ -203,8 +204,6 @@ class DotnetPlugin: Plugin<Project> {
             return result
         }
     }
-
-
 
     override fun apply(project: Project) {
         project.plugins.apply(LifecycleBasePlugin::class.java)
