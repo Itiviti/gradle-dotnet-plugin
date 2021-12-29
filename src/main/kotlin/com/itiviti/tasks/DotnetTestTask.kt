@@ -23,14 +23,14 @@ open class DotnetTestTask: DotnetBaseTask("test") {
             isIgnoreExitValue = true
         }
 
-        val escapeQuote = if (System.getProperty("os.name").contains("windows", true)) "\\\"" else "\""
+        val escapeExcludeQuote = if (System.getProperty("os.name").contains("windows", true)) "\\\"" else "\""
 
         if (testExtension.settings?.exists() == true) {
             args("--settings", testExtension.settings!!.absolutePath)
         }
         if (testExtension.collectCoverage) {
             args("/p:CollectCoverage=true")
-            args("/p:ExcludeByFile=${escapeQuote}${testExtension.coverletExcludeFiles}${escapeQuote}", "/p:CoverletOutputFormat=${testExtension.coverletOutputFormat}", "/p:CoverletOutput=${escapeQuote}${testExtension.coverletOutput.absolutePath}/${escapeQuote}")
+            args("/p:ExcludeByFile=${escapeExcludeQuote}${testExtension.coverletExcludeFiles}${escapeExcludeQuote}", "/p:CoverletOutputFormat=${testExtension.coverletOutputFormat}", "/p:CoverletOutput=${testExtension.coverletOutput.absolutePath}/")
         }
 
         val testExtensionAware = (testExtension as ExtensionAware)
@@ -39,13 +39,13 @@ open class DotnetTestTask: DotnetBaseTask("test") {
 
         // nunit
         val nunitExtension = testExtensionAware.extensions.getByType(DotnetNUnitExtension::class.java)
-        args("NUnit.TestOutputXml=\"${nunitExtension.testOutputXml.absolutePath}\"")
+        args("NUnit.TestOutputXml=${nunitExtension.testOutputXml.absolutePath}")
         if (nunitExtension.numberOfTestWorkers >= 0) {
             args("NUnit.NumberOfTestWorkers=${nunitExtension.numberOfTestWorkers}")
         }
 
         if (nunitExtension.where.isNotBlank()) {
-            args("NUnit.Where=\"${nunitExtension.where}\"")
+            args("NUnit.Where=${nunitExtension.where}")
         }
 
         if (nunitExtension.stopOnError) {

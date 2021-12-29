@@ -39,7 +39,6 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
 
         args("/nodereuse:false")
 
-        val pluginExtension = getPluginExtension()
         val restoreExtension = getNestedExtension(DotnetRestoreExtension::class.java)
         val buildExtension = getNestedExtension(DotnetBuildExtension::class.java)
 
