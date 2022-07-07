@@ -38,7 +38,7 @@ class DotnetPlugin: Plugin<Project> {
             }.exitValue
         }
 
-        private fun getMajorVersion(version: String) = version.substringBeforeLast('.').toDouble()
+        private fun getMajorVersion(version: String) = version.substringBeforeLast('-', version).substringBeforeLast('.').toDouble()
 
         fun listSdks(project: Project, extension: DotnetPluginExtension): String {
             val listSdksOutputStream = ByteArrayOutputStream()
