@@ -21,6 +21,8 @@ import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
 import java.util.regex.Pattern
 
+//nothing here
+
 class DotnetPlugin: Plugin<Project> {
     companion object {
         const val TASK_GROUP = "dotnet"
