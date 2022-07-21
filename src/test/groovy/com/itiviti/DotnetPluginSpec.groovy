@@ -54,7 +54,7 @@ class DotnetPluginSpec extends Specification {
         pluginExtension.mainProject.projectFile != null
         pluginExtension.mainProject.packageReferences.size() == 3
         pluginExtension.mainProject.outputPaths.size() == 4
-        pluginExtension.mainProject.inputFiles.size() == 10
+        pluginExtension.mainProject.inputFiles.size() == 12
         [ DotnetProject.BuildAction.Content,
           DotnetProject.BuildAction.None,
           DotnetProject.BuildAction.EmbeddedResource,
