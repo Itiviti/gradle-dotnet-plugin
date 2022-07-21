@@ -61,7 +61,7 @@ class DotnetPluginSpec extends Specification {
           DotnetProject.BuildAction.Page,
           DotnetProject.BuildAction.Compile,
           DotnetProject.BuildAction.Resource].each {
-            assert pluginExtension.mainProject.getSources(it).size() == 3
+            assert pluginExtension.mainProject.getSources(it).size() == 1
         }
         pluginExtension.mainProject.getSources(DotnetProject.BuildAction.ApplicationDefinition).size() == 3
         project.tasks.clean.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetClean' }.size() > 0
