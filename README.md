@@ -43,6 +43,8 @@ buildscript {
         classpath 'com.itiviti.gradle:gradle-dotnet-plugin:1.6.1'
     }
 }
+
+apply plugin: 'com.itiviti.dotnet'
 ```
 
 ## Configuration
