@@ -19,6 +19,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+import java.text.DecimalFormat
 import java.util.regex.Pattern
 
 class DotnetPlugin: Plugin<Project> {
@@ -120,8 +121,7 @@ class DotnetPlugin: Plugin<Project> {
 
             val targetFramework = when {
                 versionString.startsWith("3.1") -> "netcoreapp3.1"
-                versionString.startsWith("5.0") -> "net5.0"
-                versionString.startsWith("6.0") -> "net6.0"
+                majorVersion >= 5 -> "net${DecimalFormat("#.0").format(majorVersion)}"
                 else -> throw GradleException("""
                     Unsupported target for framework version '${versionString}'.
                     Please make sure that you have a compatible SDK installed on your machine.
