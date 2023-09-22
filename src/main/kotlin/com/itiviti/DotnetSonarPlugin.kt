@@ -13,8 +13,8 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
 import org.sonarqube.gradle.ActionBroadcast
 import org.sonarqube.gradle.SonarPropertyComputer
-import org.sonarqube.gradle.SonarQubeExtension
-import org.sonarqube.gradle.SonarQubeProperties
+import org.sonarqube.gradle.SonarExtension
+import org.sonarqube.gradle.SonarProperties
 
 class DotnetSonarPlugin: Plugin<Project> {
 
@@ -39,14 +39,14 @@ class DotnetSonarPlugin: Plugin<Project> {
         }
     }
 
-    private val actionBroadcast = ActionBroadcast<SonarQubeProperties>()
+    private val actionBroadcast = ActionBroadcast<SonarProperties>()
 
     override fun apply(project: Project) {
-        val sonarQubeExtension = project.extensions.create(SonarQubeExtension.SONARQUBE_EXTENSION_NAME, SonarQubeExtension::class.java, actionBroadcast)
+        val sonarQubeExtension = project.extensions.create(SonarExtension.SONAR_EXTENSION_NAME, SonarExtension::class.java, actionBroadcast)
 
         project.plugins.withType(DotnetPlugin::class.java) {
             (project.extensions.getByType(DotnetPluginExtension::class.java) as ExtensionAware)
-                    .extensions.create(SonarQubeExtension.SONARQUBE_EXTENSION_NAME, DotnetSonarExtension::class.java)
+                    .extensions.create(SonarExtension.SONAR_EXTENSION_NAME, DotnetSonarExtension::class.java)
         }
 
         val sonarInstallTask = project.tasks.register("dotnetInstallSonar", DotnetInstallSonarTask::class.java) {
@@ -56,10 +56,10 @@ class DotnetSonarPlugin: Plugin<Project> {
             }
         }
 
-        val sonarTask = project.tasks.register(SonarQubeExtension.SONARQUBE_TASK_NAME) {
+        val sonarTask = project.tasks.register(SonarExtension.SONAR_TASK_NAME) {
             it.dependsOn(sonarInstallTask)
             it.doLast {
-                project.logger.info("${SonarQubeExtension.SONARQUBE_TASK_NAME} task was invoked, enable dotnetSonar")
+                project.logger.info("${SonarExtension.SONAR_TASK_NAME} task was invoked, enable dotnetSonar")
                 project.tasks.withType(DotnetSonarTask::class.java).configureEach { sonarDotnetTask ->
                     sonarDotnetTask.enabled = true
                 }
@@ -112,7 +112,7 @@ class DotnetSonarPlugin: Plugin<Project> {
         }
     }
 
-    private fun setupReportPath(sonarQube: SonarQubeExtension, extension: DotnetPluginExtension) {
+    private fun setupReportPath(sonarQube: SonarExtension, extension: DotnetPluginExtension) {
         val testExtension = (extension as ExtensionAware).extensions.getByType(DotnetTestExtension::class.java)
         val nunitExtension = (testExtension as ExtensionAware).extensions.getByType(DotnetNUnitExtension::class.java)
 
@@ -142,7 +142,7 @@ class DotnetSonarPlugin: Plugin<Project> {
     }
 
     private fun computeSonarProperties(project: Project): Map<String, Any?> {
-        val actionBroadcastMap = mutableMapOf<String, ActionBroadcast<SonarQubeProperties>>()
+        val actionBroadcastMap = mutableMapOf<String, ActionBroadcast<SonarProperties>>()
         actionBroadcastMap[project.path] = actionBroadcast
         val propertyComputer = SonarPropertyComputer(actionBroadcastMap, project)
         return propertyComputer.computeSonarProperties()
