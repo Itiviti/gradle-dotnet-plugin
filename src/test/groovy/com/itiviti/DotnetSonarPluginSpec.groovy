@@ -27,7 +27,7 @@ class DotnetSonarPluginSpec extends Specification {
         project.plugins.apply('com.itiviti.dotnet-sonar')
 
         then:
-        project.tasks.getByName('sonarqube') != null
+        project.tasks.getByName(SonarExtension.SONAR_TASK_NAME) != null
         project.tasks.getByName('dotnetSonar') != null
         project.tasks.getByName('dotnetInstallSonar') != null
     }

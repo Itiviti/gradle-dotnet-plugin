@@ -11,10 +11,7 @@ import com.itiviti.tasks.DotnetTestTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
-import org.sonarqube.gradle.ActionBroadcast
-import org.sonarqube.gradle.SonarPropertyComputer
-import org.sonarqube.gradle.SonarExtension
-import org.sonarqube.gradle.SonarProperties
+import org.sonarqube.gradle.*
 
 class DotnetSonarPlugin: Plugin<Project> {
 
@@ -43,6 +40,8 @@ class DotnetSonarPlugin: Plugin<Project> {
 
     override fun apply(project: Project) {
         val sonarQubeExtension = project.extensions.create(SonarExtension.SONAR_EXTENSION_NAME, SonarExtension::class.java, actionBroadcast)
+        // legacy extension kept for plugin compatibility
+        project.extensions.create("sonarqube", SonarExtension::class.java, actionBroadcast)
 
         project.plugins.withType(DotnetPlugin::class.java) {
             (project.extensions.getByType(DotnetPluginExtension::class.java) as ExtensionAware)
