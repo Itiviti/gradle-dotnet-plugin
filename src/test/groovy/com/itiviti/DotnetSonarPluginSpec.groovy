@@ -13,7 +13,7 @@ package com.itiviti
 
 import org.gradle.api.tasks.Exec
 import org.gradle.testfixtures.ProjectBuilder
-import org.sonarqube.gradle.SonarQubeExtension
+import org.sonarqube.gradle.SonarExtension
 import spock.lang.Specification
 
 class DotnetSonarPluginSpec extends Specification {
@@ -63,7 +63,7 @@ class DotnetSonarPluginSpec extends Specification {
         project.plugins.apply('com.itiviti.dotnet')
         project.plugins.apply('com.itiviti.dotnet-sonar')
 
-        ((SonarQubeExtension)project.extensions.getByName(SonarQubeExtension.SONARQUBE_EXTENSION_NAME)).properties {
+        ((SonarExtension)project.extensions.getByName(SonarExtension.SONAR_EXTENSION_NAME)).properties {
             property 'sonar.login', 'foo'
         }
 
