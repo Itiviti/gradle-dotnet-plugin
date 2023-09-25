@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyTitle>core-test</AssemblyTitle>
     <Product>core-test</Product>
+    <NuGetProjectStyle>PackageReference</NuGetProjectStyle>
     <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

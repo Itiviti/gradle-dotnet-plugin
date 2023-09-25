@@ -23,14 +23,12 @@ import org.gradle.api.provider.Provider
 import org.gradle.execution.ProjectExecutionServices
 import org.gradle.testfixtures.ProjectBuilder
 import spock.lang.Specification
-import spock.lang.Unroll
 
 import java.nio.file.Paths
 
 class DotnetPluginSpec extends Specification {
 
-    @Unroll
-    def "Project is restored and parsed correctly with beforeBuild = #beforeBuild with publishing = #publishing"() {
+    def "Project is restored and parsed correctly"() {
         setup:
         def project = ProjectBuilder.builder()
                 .build()

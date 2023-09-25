@@ -1,6 +1,7 @@
 package com.itiviti
 
 import java.io.File
+import java.nio.file.Paths
 
 @Suppress("UNCHECKED_CAST")
 class DotnetProject(private val eval: Map<String, Any>) {
@@ -98,6 +99,10 @@ class DotnetProject(private val eval: Map<String, Any>) {
     }
 
     private fun resolveFile(str: String): File {
+        val path = Paths.get(str)
+        if (path.isAbsolute) {
+            return path.toFile()
+        }
         return File(getProjectDirectory(), str)
     }
 }

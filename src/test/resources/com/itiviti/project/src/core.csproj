@@ -8,9 +8,10 @@
     <Copyright>my copyright</Copyright>
     <Title>my title</Title>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <NuGetProjectStyle>PackageReference</NuGetProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Buffers" Version="4.5.0-rc1" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="App.cs" />
