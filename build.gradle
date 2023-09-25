@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.21.0'
+    id 'com.gradle.plugin-publish' version '0.15.0'
     id 'org.jetbrains.kotlin.jvm' version '1.9.10'
     id 'groovy'
     id 'maven-publish'
@@ -17,7 +17,7 @@ repositories {
 }
 
 sourceCompatibility = JavaVersion.VERSION_1_8
-
+jacoco.toolVersion = "0.8.10"
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
