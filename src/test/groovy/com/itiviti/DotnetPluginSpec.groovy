@@ -106,17 +106,15 @@ class DotnetPluginSpec extends Specification {
         setup:
         def buildFile = new File(testProjectDir, 'build.gradle')
         buildFile << """
-            version = 11.11
             plugins {
                 id 'com.itiviti.dotnet'
             }
-            
+            version = 11.11
+
             dotnet {
-                workingDir = ${new File(this.class.getResource('project').toURI())}
+                workingDir = '${new File(this.class.getResource('project').toURI())}'
             }
-        """
-        def project = ProjectBuilder.builder()
-                .build()
+        """.stripIndent()
 
         when:
         def result = GradleRunner.create()
