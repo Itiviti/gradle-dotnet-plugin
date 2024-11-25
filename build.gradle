@@ -49,7 +49,7 @@ gradlePlugin {
         }
 
         sonarPlugin {
-            id = 'com.itiviti.dotnet.sonar'
+            id = 'com.itiviti.dotnet-sonar'
             implementationClass = 'com.itiviti.DotnetSonarPlugin'
             displayName = 'Gradle Dotnet Sonar plugin'
             description = 'Plugin for wrapping .net sdk project build with sonar'

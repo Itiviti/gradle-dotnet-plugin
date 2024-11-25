@@ -22,11 +22,17 @@ import org.gradle.api.internal.tasks.execution.DefaultTaskExecutionContext
 import org.gradle.api.provider.Provider
 import org.gradle.execution.ProjectExecutionServices
 import org.gradle.testfixtures.ProjectBuilder
+import org.gradle.testkit.runner.GradleRunner
+import org.gradle.testkit.runner.TaskOutcome
 import spock.lang.Specification
+import spock.lang.TempDir
 
 import java.nio.file.Paths
 
 class DotnetPluginSpec extends Specification {
+
+    @TempDir
+    File testProjectDir
 
     def "Project is restored and parsed correctly"() {
         setup:
@@ -98,27 +104,29 @@ class DotnetPluginSpec extends Specification {
 
     def ".net sdk project can be built"() {
         setup:
+        def buildFile = new File(testProjectDir, 'build.gradle')
+        buildFile << """
+            version = 11.11
+            plugins {
+                id 'com.itiviti.dotnet'
+            }
+            
+            dotnet {
+                workingDir = ${new File(this.class.getResource('project').toURI())}
+            }
+        """
         def project = ProjectBuilder.builder()
                 .build()
-        project.version = '9.14.0'
-        project.plugins.apply('com.itiviti.dotnet')
-
-        def pluginExtension = project.extensions.getByType(DotnetPluginExtension)
-        pluginExtension.workingDir = new File(this.class.getResource('project').toURI())
-
-        def buildTask = project.tasks.getByName("build")
-        def executionServices = new ProjectExecutionServices(project as ProjectInternal)
 
         when:
-        project.evaluate()
-        project.gradle.taskGraph.addEntryTasks([buildTask])
-        project.gradle.taskGraph.populate()
-
-        and:
-        executionServices.get(TaskExecuter).execute(buildTask as TaskInternal, buildTask.state as TaskStateInternal, new DefaultTaskExecutionContext(null))
+        def result = GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments('build')
+            .withPluginClasspath()
+            .build()
 
         then:
-        buildTask.state.failure == null
+        result.task(':build').outcome == TaskOutcome.SUCCESS
     }
 
     def "MSBuildSDKsPath version mismatch is fixed automatically"() {

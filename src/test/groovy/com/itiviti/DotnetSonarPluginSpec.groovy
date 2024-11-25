@@ -51,7 +51,7 @@ class DotnetSonarPluginSpec extends Specification {
 
         then: 'dotnet-sonarscanner can be started'
         noExceptionThrown()
-        sonarTask.execResult.exitValue > 0
+        sonarTask.executionResult.get().exitValue > 0
     }
 
     def 'sonar.login is passed in dotnet-sonarscanner end'() {
