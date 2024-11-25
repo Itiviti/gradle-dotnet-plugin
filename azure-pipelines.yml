@@ -24,9 +24,8 @@ steps:
     packageType: 'sdk'
     version: '6.0.x'
 
-- task: Gradle@2
+- task: Gradle@3
   inputs:
-    workingDirectory: ''
     gradleWrapperFile: 'gradlew'
     options: '--info'
     gradleOptions: '-Xmx3072m'
