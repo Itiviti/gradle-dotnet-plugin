@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>core.test</RootNamespace>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AssemblyTitle>core-test</AssemblyTitle>
     <Product>core-test</Product>
     <NuGetProjectStyle>PackageReference</NuGetProjectStyle>
