@@ -1,8 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    id 'java-gradle-plugin'
-    id 'com.gradle.plugin-publish' version '0.15.0'
+    id 'com.gradle.plugin-publish' version '1.3.0'
     id 'org.jetbrains.kotlin.jvm' version '1.9.10'
     id 'groovy'
     id 'maven-publish'
@@ -16,8 +15,8 @@ repositories {
     }
 }
 
+jacoco.toolVersion = '0.8.10'
 sourceCompatibility = JavaVersion.VERSION_1_8
-jacoco.toolVersion = "0.8.10"
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_1_8)
@@ -39,40 +38,25 @@ test {
 }
 
 gradlePlugin {
-    plugins {
-        dotnet {
-            id = 'com.itiviti.dotnet'
-            implementationClass = 'com.itiviti.DotnetPlugin'
-        }
-        sonar {
-            id = 'com.itiviti.dotnet-sonar'
-            implementationClass = 'com.itiviti.DotnetSonarPlugin'
-        }
-    }
-}
-
-pluginBundle {
     website = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
     vcsUrl = 'https://www.github.com/Itiviti/gradle-dotnet-plugin'
     description = 'gradle-dotnet-plugin is a Gradle plugin for .net sdk project build'
-
     plugins {
-        dotnet {
+        dotnetPlugin {
+            id = 'com.itiviti.dotnet'
+            implementationClass = 'com.itiviti.DotnetPlugin'
             displayName = 'Gradle Dotnet plugin'
             description = 'Plugin for building .net sdk project'
-            tags = ['dotnet', '.net core', 'msbuild', 'nunit', 'nuget']
+            tags.set(['dotnet', '.net core', 'msbuild', 'nunit', 'nuget'])
         }
 
-        sonar {
+        sonarPlugin {
+            id = 'com.itiviti.dotnet.sonar'
+            implementationClass = 'com.itiviti.DotnetSonarPlugin'
             displayName = 'Gradle Dotnet Sonar plugin'
             description = 'Plugin for wrapping .net sdk project build with sonar'
-            tags = ['dotnet', '.net core', 'msbuild', 'sonarqube']
+            tags.set(['dotnet', '.net core', 'msbuild', 'sonarqube'])
         }
-    }
-
-    mavenCoordinates {
-        groupId = 'com.itiviti.gradle'
-        artifactId = 'gradle-dotnet-plugin'
     }
 }
 
