@@ -133,13 +133,14 @@ class DotnetPlugin: Plugin<Project> {
 
             project.logger.info("Use $targetFramework for project parser")
 
-            val tempDir = Files.createDirectories(File(project.buildDir, "tmp/dotnet").toPath())
+            val tempDir = project.layout.buildDirectory.dir("tmp/dotnet").get()
+            Files.createDirectories(tempDir.asFile.toPath())
 
             project.logger.info("  Extracting parser to {}", tempDir)
 
             val reflections = Reflections(ConfigurationBuilder().setScanners(ResourcesScanner()).setUrls(ClasspathHelper.forPackage("com.itiviti.parser")))
             reflections.getResources(Pattern.compile(".*\\.cs(proj)?")).forEach {
-                Files.copy(DotnetPlugin::class.java.classLoader.getResourceAsStream(it)!!, tempDir.resolve(File(it).name), StandardCopyOption.REPLACE_EXISTING)
+                Files.copy(DotnetPlugin::class.java.classLoader.getResourceAsStream(it)!!, tempDir.file(File(it).name).asFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
             }
 
             val args = buildExtension.getProperties().toMutableMap()
@@ -158,7 +159,7 @@ class DotnetPlugin: Plugin<Project> {
             val errorOutputStream = ByteArrayOutputStream()
             val parser = project.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
-                exec.workingDir(tempDir.toFile())
+                exec.workingDir(tempDir.asFile)
                 exec.args("run")
                 if (majorVersion >= 6) {
                     exec.args("--property:FrameworkVersion=${targetFramework}")
@@ -214,8 +215,8 @@ class DotnetPlugin: Plugin<Project> {
         val extensionAware = extension as ExtensionAware
         extensionAware.extensions.create("restore", DotnetRestoreExtension::class.java)
         extensionAware.extensions.create("build", DotnetBuildExtension::class.java, project.version)
-        val testExtension = extensionAware.extensions.create("test", DotnetTestExtension::class.java, project.buildDir)
-        (testExtension as ExtensionAware).extensions.create("nunit", DotnetNUnitExtension::class.java, project.buildDir)
+        val testExtension = extensionAware.extensions.create("test", DotnetTestExtension::class.java, project.layout.buildDirectory.get().asFile)
+        (testExtension as ExtensionAware).extensions.create("nunit", DotnetNUnitExtension::class.java, project.layout.buildDirectory.get().asFile)
         extensionAware.extensions.create("nugetPush", DotnetNugetPushExtension::class.java)
 
         project.afterEvaluate {

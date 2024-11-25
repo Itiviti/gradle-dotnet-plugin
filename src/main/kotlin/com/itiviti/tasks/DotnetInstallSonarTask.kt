@@ -16,6 +16,6 @@ open class DotnetInstallSonarTask: BaseExecTask("tool", "update", "dotnet-sonars
         restoreExtension.source.forEach {
             args("--add-source", it)
         }
-        args("--tool-path", project.buildDir.resolve(DotnetSonarExtension.toolPath))
+        args("--tool-path", project.layout.buildDirectory.dir(DotnetSonarExtension.toolPath).get().asFile)
     }
 }
