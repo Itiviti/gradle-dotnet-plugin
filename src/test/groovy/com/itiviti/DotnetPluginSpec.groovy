@@ -112,7 +112,7 @@ class DotnetPluginSpec extends Specification {
             version = 11.11
 
             dotnet {
-                workingDir = '${new File(this.class.getResource('project').toURI())}'
+                workingDir = file('${new File(this.class.getResource('project').toURI())}')
             }
         """.stripIndent()
 
