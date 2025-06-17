@@ -21,6 +21,7 @@ if `publising` plugin is applied, `dotnetNugetPush` task will hook on `publish`
 
 ## Prerequisites
 * .Net Core SDK 3.1 / .Net 5.0 / .Net 6.0
+* JDK 11
 * Gradle 6.1
 
 ## To Apply
