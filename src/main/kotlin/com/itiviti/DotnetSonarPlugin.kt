@@ -55,15 +55,16 @@ class DotnetSonarPlugin: Plugin<Project> {
             }
         }
 
-        val sonarTask = project.tasks.register(SonarExtension.SONAR_TASK_NAME) {
+        val dotnetEnableSonarTask = project.tasks.register("dotnetEnableSonar") {
             it.dependsOn(sonarInstallTask)
             it.doLast {
-                project.logger.info("${SonarExtension.SONAR_TASK_NAME} task was invoked, enable dotnetSonar")
+                project.logger.info("dotnetEnableSonar task was invoked, enabling dotnetSonar")
                 project.tasks.withType(DotnetSonarTask::class.java).configureEach { sonarDotnetTask ->
                     sonarDotnetTask.enabled = true
                 }
             }
         }
+
         val sonarDotnetTask = project.tasks.register("dotnetSonar", DotnetSonarTask::class.java) {
             with(it) {
                 group = DotnetPlugin.TASK_GROUP
@@ -71,7 +72,7 @@ class DotnetSonarPlugin: Plugin<Project> {
                 enabled = false
 
                 mustRunAfter(sonarInstallTask)
-                mustRunAfter(sonarTask)
+                mustRunAfter(dotnetEnableSonarTask)
 
                 doLast {
                     // Clean .sonarqube
@@ -79,12 +80,16 @@ class DotnetSonarPlugin: Plugin<Project> {
                 }
             }
         }
+        val sonarTask = project.tasks.register(SonarExtension.SONAR_TASK_NAME) {
+            it.dependsOn(sonarDotnetTask)
+            it.dependsOn(dotnetEnableSonarTask)
+        }
 
         project.tasks.withType(DotnetBuildTask::class.java).configureEach { task -> task.finalizedBy(sonarDotnetTask) }
         project.tasks.withType(DotnetTestTask::class.java).configureEach { task -> task.finalizedBy(sonarDotnetTask) }
 
         project.tasks.withType(DotnetBuildTask::class.java).configureEach { task ->
-            task.mustRunAfter(sonarTask)
+            task.mustRunAfter(dotnetEnableSonarTask)
 
             task.doFirst {
                 val extension = project.extensions.getByType(DotnetPluginExtension::class.java)
