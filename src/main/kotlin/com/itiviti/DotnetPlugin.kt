@@ -29,7 +29,7 @@ class DotnetPlugin: Plugin<Project> {
         const val TASK_GROUP = "dotnet"
 
         private fun restore(project: Project, extension: DotnetPluginExtension, restoreExtension: DotnetRestoreExtension, buildExtension: DotnetBuildExtension): Int {
-            return project.exec { exec ->
+            return project.providers.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.workingDir(extension.workingDir)
                 exec.args("restore")
@@ -38,30 +38,24 @@ class DotnetPlugin: Plugin<Project> {
                 }
                 exec.args("--verbosity", extension.verbosity)
                 DotnetBuildTask.restoreArgs(restoreExtension, buildExtension, exec)
-            }.exitValue
+            }.result.get().exitValue
         }
 
         private fun getMajorVersion(version: String) = version.substringBeforeLast('-', version).substringBeforeLast('.').toDouble()
 
         fun listSdks(project: Project, extension: DotnetPluginExtension): String {
-            val listSdksOutputStream = ByteArrayOutputStream()
-            project.exec { exec ->
+            return project.providers.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.args("--list-sdks")
-                exec.standardOutput = listSdksOutputStream
-            }
-            return listSdksOutputStream.toString()
+            }.standardOutput.asText.get()
         }
 
         @JvmStatic
         fun getDotnetVersion(project: Project, extension: DotnetPluginExtension): String {
-            val outputStream = ByteArrayOutputStream()
-            project.exec { exec ->
+            return project.providers.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.args("--version")
-                exec.standardOutput = outputStream
-            }
-            return outputStream.toString().trim()
+            }.standardOutput.asText.get()
         }
 
         @JvmStatic
@@ -155,9 +149,7 @@ class DotnetPlugin: Plugin<Project> {
                 args["PackageVersion"] = buildExtension.packageVersion
             }
 
-            val parseOutputStream = ByteArrayOutputStream()
-            val errorOutputStream = ByteArrayOutputStream()
-            val parser = project.exec { exec ->
+            val parser = project.providers.exec { exec ->
                 exec.commandLine(extension.dotnetExecutable)
                 exec.workingDir(tempDir.asFile)
                 exec.args("run")
@@ -168,16 +160,11 @@ class DotnetPlugin: Plugin<Project> {
                     exec.environment("MSBuildSDKsPath", extension.msbuildSDKsPath)
                 }
                 exec.args("-f", targetFramework, "--", targetFile, Gson().toJson(args).replace('"', '\''))
-                exec.standardOutput = parseOutputStream
-                exec.errorOutput = errorOutputStream
                 exec.isIgnoreExitValue = true
             }
 
-            if (parser.exitValue != 0) {
-                throw GradleException("Failed to parse project, output: ${parseOutputStream}, error: ${errorOutputStream}")
-            }
-
-            val processOutput = parseOutputStream.toString()
+            parser.result.get().assertNormalExitValue()
+            val processOutput = parser.standardOutput.asText.get()
             val result = JsonSlurper().parseText(processOutput.substring(processOutput.indexOf('{'))) as MutableMap<String, Any>
 
             return result.map { entry -> entry.key to DotnetProject(entry.value as Map<String, Any>) }.toMap()

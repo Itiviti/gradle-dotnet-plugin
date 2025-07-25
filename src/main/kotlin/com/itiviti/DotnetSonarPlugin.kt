@@ -97,7 +97,7 @@ class DotnetSonarPlugin: Plugin<Project> {
                 if (sonarDotnetTask.get().enabled) {
 
                     setupReportPath(sonarQubeExtension, extension)
-                    project.exec { exec ->
+                    project.providers.exec { exec ->
                         exec.workingDir = extension.workingDir
                         exec.commandLine(project.layout.buildDirectory.dir(DotnetSonarExtension.toolPath).get().asFile.resolve("dotnet-sonarscanner"))
                         exec.args("begin")
@@ -105,7 +105,7 @@ class DotnetSonarPlugin: Plugin<Project> {
                         buildArgs(sonarQubeProperties).forEach {
                             exec.args(it)
                         }
-                    }
+                    }.result.get()
                 }
             }
         }
