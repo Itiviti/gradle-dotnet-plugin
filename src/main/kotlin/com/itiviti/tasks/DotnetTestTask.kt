@@ -3,16 +3,19 @@ package com.itiviti.tasks
 import com.itiviti.extensions.DotnetNUnitExtension
 import com.itiviti.extensions.DotnetTestExtension
 import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 
-open class DotnetTestTask: DotnetBaseTask("test") {
-    private var filter: String? = null
+abstract class DotnetTestTask: DotnetBaseTask("test") {
 
-    @Option(option = "dotnet-tests", description = "Override filter options")
-    fun setFilter(filter: String?) {
-        this.filter = filter
-    }
+    @get:Input
+    @get:Optional
+    @get:Option(option = "dotnet-tests", description = "Override filter options")
+    abstract val filter: Property<String>
+
 
     init {
         // built with DotnetBuildTask
@@ -55,13 +58,8 @@ open class DotnetTestTask: DotnetBaseTask("test") {
 
     @TaskAction
     override fun exec() {
-        // Override filter when set
-        val testExtension = (getPluginExtension() as ExtensionAware).extensions.getByType(DotnetTestExtension::class.java)
-        if (!filter.isNullOrBlank()) {
-            args = (listOf(args!![0], "--filter", filter)) + args!!.drop(1)
-        }
-        else if (!testExtension.filter.isNullOrBlank()) {
-            args = (listOf(args!![0], "--filter", testExtension.filter)) + args!!.drop(1)
+        if (!filter.orNull.isNullOrBlank()){
+            args = (listOf(args!![0], "--filter", filter.get())) + args!!.drop(1)
         }
 
         super.exec()

@@ -1,16 +1,17 @@
 package com.itiviti.extensions
 
+import org.gradle.api.provider.Property
 import java.io.File
 
 /**
  * https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-test
  */
-open class DotnetTestExtension(buildDir: File) {
+abstract class DotnetTestExtension(buildDir: File) {
     /**
      * Filters out tests in the current project using the given expression.
      * http://blog.prokrams.com/2019/12/16/nunit3-filter-dotnet/
      */
-    var filter: String? = null
+    abstract val filter: Property<String>
 
     /**
      * The .runsettings file to use for running the tests
