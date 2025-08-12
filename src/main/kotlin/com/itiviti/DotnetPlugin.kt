@@ -14,7 +14,6 @@ import org.reflections.Reflections
 import org.reflections.scanners.ResourcesScanner
 import org.reflections.util.ClasspathHelper
 import org.reflections.util.ConfigurationBuilder
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -251,6 +250,7 @@ class DotnetPlugin: Plugin<Project> {
                 group = TASK_GROUP
                 description = ".NET test driver used to execute unit tests."
                 mustRunAfter(dotnetBuild)
+                filter.convention(testExtension.filter)
             }
         }
         project.tasks.named(LifecycleBasePlugin.BUILD_TASK_NAME).configure {
