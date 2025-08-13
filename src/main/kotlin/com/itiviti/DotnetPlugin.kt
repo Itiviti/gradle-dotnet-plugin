@@ -141,11 +141,11 @@ class DotnetPlugin: Plugin<Project> {
             if (!extension.platform.isNullOrBlank()) {
                 args["Platform"] = extension.platform!!
             }
-            if (buildExtension.version.isNotEmpty()) {
-                args["Version"] = buildExtension.version
+            if (buildExtension.version.get().isNotEmpty()) {
+                args["Version"] = buildExtension.version.get()
             }
-            if (buildExtension.packageVersion.isNotEmpty()) {
-                args["PackageVersion"] = buildExtension.packageVersion
+            if (buildExtension.version.get().isNotEmpty()) {
+                args["PackageVersion"] = buildExtension.packageVersion.get()
             }
 
             val parser = project.providers.exec { exec ->
@@ -200,7 +200,10 @@ class DotnetPlugin: Plugin<Project> {
         val extension = project.extensions.create("dotnet", DotnetPluginExtension::class.java, project.name, project.projectDir, { evaluateProject(project) })
         val extensionAware = extension as ExtensionAware
         extensionAware.extensions.create("restore", DotnetRestoreExtension::class.java)
-        extensionAware.extensions.create("build", DotnetBuildExtension::class.java, project.version)
+        val buildExtension = extensionAware.extensions.create("build", DotnetBuildExtension::class.java)
+        buildExtension.version.convention(project.provider { project.version.toString() })
+        buildExtension.packageVersion.convention(project.provider { project.version.toString() })
+
         val testExtension = extensionAware.extensions.create("test", DotnetTestExtension::class.java, project.layout.buildDirectory.get().asFile)
         (testExtension as ExtensionAware).extensions.create("nunit", DotnetNUnitExtension::class.java, project.layout.buildDirectory.get().asFile)
         extensionAware.extensions.create("nugetPush", DotnetNugetPushExtension::class.java)
