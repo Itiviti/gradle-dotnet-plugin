@@ -4,13 +4,14 @@ import groovy.lang.GroovyObjectSupport
 import groovy.lang.MissingPropertyException
 import groovy.lang.ReadOnlyPropertyException
 import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.api.provider.Property
 import org.gradle.process.ExecSpec
 
-open class DotnetBuildExtension(projectVersion: String) : GroovyObjectSupport() {
+abstract class DotnetBuildExtension : GroovyObjectSupport() {
     private val storage = mutableMapOf<String, Any?>()
 
-    var version = projectVersion
-    var packageVersion = projectVersion
+    abstract val version : Property<String>;
+    abstract val packageVersion: Property<String>;
 
     operator fun get(property: String): String? {
         return storage[property]?.toString()

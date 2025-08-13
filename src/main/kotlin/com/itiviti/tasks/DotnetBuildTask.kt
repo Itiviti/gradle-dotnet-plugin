@@ -3,7 +3,10 @@ package com.itiviti.tasks
 import com.itiviti.extensions.DotnetBuildExtension
 import com.itiviti.extensions.DotnetRestoreExtension
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectories
 import org.gradle.process.ExecSpec
 import java.io.File
@@ -24,6 +27,13 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
             buildExtension.addCustomBuildProperties(exec)
         }
     }
+    @Input
+    @Optional
+    val version: Property<String> = project.objects.property(String::class.java).convention(getNestedExtension(DotnetBuildExtension::class.java).version)
+
+    @Input
+    @Optional
+    val packageVersion: Property<String> = project.objects.property(String::class.java).convention(getNestedExtension(DotnetBuildExtension::class.java).packageVersion)
 
     @InputFiles
     val sources: ListProperty<File> = project.objects.listProperty(File::class.java)
@@ -32,6 +42,8 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
     @OutputDirectories
     val destinations: ListProperty<File> = project.objects.listProperty(File::class.java)
             .convention (project.provider { getPluginExtension().allProjects.map { it.value.getOutputPaths() }.flatten() })
+
+
 
     init {
         sources.finalizeValueOnRead()
@@ -49,11 +61,11 @@ open class DotnetBuildTask: DotnetBaseTask("build") {
             args("--no-restore")
         }
 
-        if (buildExtension.version.isNotEmpty()) {
-            args("-p:Version=${buildExtension.version}")
+        if (!version.orNull.isNullOrBlank()) {
+            args("-p:Version=${version.get()}")
         }
-        if (buildExtension.packageVersion.isNotEmpty()) {
-            args("-p:PackageVersion=${buildExtension.packageVersion}")
+        if (!packageVersion.orNull.isNullOrBlank()) {
+            args("-p:PackageVersion=${packageVersion.get()}")
         }
 
         buildExtension.addCustomBuildProperties(this)
