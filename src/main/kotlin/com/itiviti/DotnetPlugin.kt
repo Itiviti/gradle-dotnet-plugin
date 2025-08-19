@@ -144,7 +144,7 @@ class DotnetPlugin: Plugin<Project> {
             if (buildExtension.version.get().isNotEmpty()) {
                 args["Version"] = buildExtension.version.get()
             }
-            if (buildExtension.version.get().isNotEmpty()) {
+            if (buildExtension.packageVersion.get().isNotEmpty()) {
                 args["PackageVersion"] = buildExtension.packageVersion.get()
             }
 
