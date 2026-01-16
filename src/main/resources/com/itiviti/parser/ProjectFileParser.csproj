@@ -11,6 +11,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" Version="16.9.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.4.1" />
+  </ItemGroup>
+  <ItemGroup Condition="
+    '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+    and $([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))
+  ">
     <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageReference Include="System.Security.Principal.Windows" Version="5.0.0" />
   </ItemGroup>
