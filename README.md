@@ -41,7 +41,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.itiviti.gradle:gradle-dotnet-plugin:3.1.0'
+        classpath 'com.itiviti.gradle:gradle-dotnet-plugin:3.2.0'
     }
 }
 
