@@ -265,6 +265,36 @@ class DotnetPlugin: Plugin<Project> {
                 group = TASK_GROUP
                 description = "Push to nuget feed."
                 dependsOn(dotnetBuild)
+
+                val nugetPackageDir = extension.getMainProject().getPackageOutputPath()
+                if (nugetPackageDir == null) {
+                    enabled = false
+                } else {
+                    // Resolved lazily in doFirst, not here: the SDK's GenerateNuspec target
+                    // normalizes a short PackageVersion (e.g. "5.0-foo" -> "5.0.0-foo") when
+                    // naming the .nupkg it writes, so re-deriving the filename from the raw,
+                    // unnormalized PackageVersion property can point at a file that doesn't
+                    // exist. Looking up the actual produced file avoids that mismatch. This also
+                    // has to run after dotnetBuild has actually produced the file, which is only
+                    // guaranteed once task execution starts, not at task configuration time.
+                    doFirst {
+                        val packageId = extension.getMainProject().getProperty("PackageId")
+                        val nupkgFile = nugetPackageDir.listFiles { file ->
+                            file.name.startsWith("$packageId.") && file.name.endsWith(".nupkg") && !file.name.endsWith(".symbols.nupkg")
+                        }?.maxByOrNull { it.lastModified() }
+                            ?: throw GradleException("No .nupkg file found for package '$packageId' in $nugetPackageDir")
+                        args(nupkgFile)
+
+                        val apiKey = nugetPushExtension.apiKey
+                        if (apiKey != null) {
+                            args("--api-key", apiKey)
+                        }
+                        val source = nugetPushExtension.source
+                        if (source != null) {
+                            args("--source", source)
+                        }
+                    }
+                }
             }
         }
 
