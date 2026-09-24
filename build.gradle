@@ -5,6 +5,7 @@ plugins {
     id 'org.gradle.kotlin.embedded-kotlin' version '5.2.0'
     id 'groovy'
     id 'maven-publish'
+    id 'net.researchgate.release' version '3.1.0'
 }
 
 repositories {
@@ -56,4 +57,12 @@ gradlePlugin {
     }
 }
 
+release {
+     git {
+        requireBranch.set('master')
+     }
+}
+
 println "##vso[task.setvariable variable=project.version]${project.version}"
+
+afterReleaseBuild.dependsOn publishPlugins
