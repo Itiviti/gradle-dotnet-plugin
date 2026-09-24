@@ -206,7 +206,7 @@ class DotnetPlugin: Plugin<Project> {
 
         val testExtension = extensionAware.extensions.create("test", DotnetTestExtension::class.java, project.layout.buildDirectory.get().asFile)
         (testExtension as ExtensionAware).extensions.create("nunit", DotnetNUnitExtension::class.java, project.layout.buildDirectory.get().asFile)
-        extensionAware.extensions.create("nugetPush", DotnetNugetPushExtension::class.java)
+        val nugetPushExtension = extensionAware.extensions.create("nugetPush", DotnetNugetPushExtension::class.java)
 
         project.afterEvaluate {
             if (extension.preReleaseCheck) {
@@ -264,7 +264,7 @@ class DotnetPlugin: Plugin<Project> {
             with(it) {
                 group = TASK_GROUP
                 description = "Push to nuget feed."
-                mustRunAfter(dotnetBuild)
+                dependsOn(dotnetBuild)
             }
         }
 

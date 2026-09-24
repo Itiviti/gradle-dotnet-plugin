@@ -71,6 +71,7 @@ class DotnetPluginSpec extends Specification {
         project.tasks.clean.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetClean' }.size() > 0
         project.tasks.assemble.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetBuild' }.size() > 0
         project.tasks.build.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetTest' }.size() > 0
+        project.tasks.dotnetNugetPush.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetBuild' }.size() > 0
         if (publishing) {
             project.tasks.publish.dependsOn.findAll { it instanceof Provider && it.get().name == 'dotnetNugetPush' }.size() > 0
         }
